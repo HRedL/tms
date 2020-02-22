@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.TeacherMapper">
+
+
+    <insert id="addTeacher">
+        INSERT INTO teacher(tno,name,dept,phone,email)
+        VALUES(#{tno},#{name},#{dept},#{phone},#{email})
+    </insert>
+
+    <!--条件查询多个-->
+    <select id="getTeachers" resultType="com.qdu.tms.Bean.Teacher">
+        SELECT * FROM teacher
+        <where>
+            <if test="tno!=null">
+                TNO = #{tno}
+            </if>
+            <if test="name!=null">
+                and 'NAME' = #{name}
+            </if>
+            <if test="dept!=null">
+                and DEPT = #{dept}
+            </if>
+            <if test="email!=null">
+                and DEPT = #{email}
+            </if>
+            <if test="phone!=null">
+                and PHONE = #{phone}
+            </if>
+        </where>
+    </select>
+
+    <!--条件查询多个-->
+    <select id="getTeacher" resultType="com.qdu.tms.Bean.Teacher">
+        SELECT * FROM teacher
+        <where>
+            <if test="tno!=null">
+                TNO = #{tno}
+            </if>
+            <if test="name!=null">
+                and 'NAME' = #{name}
+            </if>
+            <if test="dept!=null">
+                and DEPT = #{dept}
+            </if>
+            <if test="email!=null">
+                and DEPT = #{email}
+            </if>
+            <if test="phone!=null">
+                and PHONE = #{phone}
+            </if>
+        </where>
+    </select>
+    <select id="getTeacherByTno" resultType="com.qdu.tms.Bean.Teacher">
+        SELECT *
+        FROM TEACHER
+        WHERE TNO=#{tno}
+    </select>
+
+    <update id="updateTeacher">
+        UPDATE TEACHER
+        <set>
+            <if test="tno!=null">
+                TNO=#{tno},
+            </if>
+            <if test="name!=null">
+                NAME=#{name},
+            </if>
+            <if test="dept!=null">
+                DEPT=#{dept},
+            </if>
+            <if test="phone!=null">
+                PHONE=#{phone},
+            </if>
+            <if test="email!=null">
+                EMAIL=#{email},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <delete id="delTeachers">
+        DELETE FROM TEACHER
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
+</mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.HomeworkStudentMapper">
+
+    <resultMap id="myHomeworkStudent" type="com.qdu.tms.Bean.HomeworkStudent">
+        <id column="ID" property="id"></id>
+        <result column="Grade" property="grade"></result>
+        <result column="TYPE" property="type"></result>
+        <association javaType="com.qdu.tms.Bean.Homework" select="com.qdu.tms.mapper.HomeworkMapper.getHomeworkById" column="HID" property="homework"/>
+    </resultMap>
+
+
+    <insert id="addHomeworkStudents">
+        INSERT iNTO HOMEWORK_STUDENT(HID,SID,TYPE)VALUES
+        <foreach collection="list" item="homeworkStudent" separator=",">
+            (#{homeworkStudent.homework.id},#{homeworkStudent.student.id},#{homeworkStudent.type})
+        </foreach>
+    </insert>
+
+    <delete id="delHomeworkStudentsByHid">
+        DELETE FROM HOMEWORK_STUDENT
+        WHERE HID=#{hid}
+    </delete>
+
+
+    <select id="getHomeworksByType" resultMap="myHomeworkStudent">
+        SELECT * FROM HOMEWORK_STUDENT
+        WHERE SID=#{sid} AND TYPE=#{type}
+    </select>
+
+    <select id="getFinishedStudents" resultType="com.qdu.tms.Bean.Student">
+        SELECT * FROM STUDENT
+        WHERE ID IN (
+            SELECT SID FROM HOMEWORK_STUDENT
+            WHERE HID=#{hid} AND TYPE=3
+        )
+
+    </select>
+    <select id="getUnfinishedStudents" resultType="com.qdu.tms.Bean.Student">
+        SELECT * FROM STUDENT
+        WHERE ID IN (
+            SELECT SID FROM HOMEWORK_STUDENT
+            WHERE HID=#{hid} AND TYPE!=3
+        )
+    </select>
+
+
+    <!--<select id="getStudentsByHidAndType" resultType="com.qdu.tms.Bean.Student">-->
+        <!--SELECT * FROM HOMEWORK_STUDENT-->
+        <!--WHERE HID=#{hid} AND TYPE=#{type}-->
+    <!--</select>-->
+
+    <update id="changeHomeworkStudentType" parameterType="com.qdu.tms.Bean.HomeworkStudent">
+        UPDATE HOMEWORK_STUDENT
+        SET TYPE=#{type}
+        WHERE HID=#{hid} AND SID=#{sid}
+    </update>
+</mapper>

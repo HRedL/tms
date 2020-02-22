@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>登录</title>
+<link href="login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="login_box">
+      <div class="login_l_img"><img src="images/login-img.png" /></div>
+      <div class="login">
+          <div class="login_logo"><a href="#"><img src="images/login_logo.png" /></a></div>
+          <div class="login_name">
+               <p>后台管理系统</p>
+          </div>
+          <form role="form" href="#" onsubmit="return false;">
+              <input name="username" type="text" id="account"   placeholder="用户名" />
+              <input name="password" type="password" id="password"  placeholder="密码" />
+<!--onblur="if(this.value==''){document.getElementById('password_text').style.display='block';this.style.display='none'};"-->
+              <label for="type"></label><select id="type">
+                  <option value="1">学生</option>
+                  <option value="2">教师</option>
+                  <option value="3">管理员</option>
+              </select>
+
+              <input id="login_btn" value="登录" style="width:100%;" type="submit">
+
+          </form>
+      </div>
+      <div class="copyright">青岛大学 版权所有©2020-2025 技术支持电话：17863991853</div>
+</div>
+<script src="webjars/jquery/3.4.1/jquery.min.js"></script>
+<script src="layer/layer.js"></script>
+<script>
+
+    $("#login_btn").click(function(){
+        dologin();
+    });
+
+
+    function dologin() {
+
+        //1.非空校验
+        var loginAccount=$("#account").val();
+        if( loginAccount === "" ){
+            layer.msg('用户的登录账号不能为空，请输入',{time:3000,icon:5,shift:6},function () {});
+            return;
+        }
+        var loginPassword=$("#password").val();
+        if( loginPassword === "" ){
+            layer.msg('用户的登录密码不能为空，请输入',{time:3000,icon:5,shift:6},function () {});
+            return;
+        }
+        var type = $("#type").val();
+        //声明一个变量，以方便关闭下面的加载效果
+        var loadingIndex=null;
+
+        $.ajax({
+            url:"user/login",
+            type:"post",
+            data:{
+                "account":loginAccount,
+                "password":loginPassword,
+                "type":type
+            },
+            beforeSend:function () {
+                loadingIndex=layer.msg('处理中',{icon:16});
+            },
+            success:function (result) {
+                layer.close(loadingIndex);
+                if(result.success){
+                    sessionStorage.setItem('user_id', result.body.object.id);
+                    sessionStorage.setItem('user_name', result.body.object.name);
+                    window.location.href=result.body.url;
+
+                }else{
+                    layer.msg('用户的账号或密码输入错误，请重新输入',{time:3000,icon:5,shift:6},function () {});
+                }
+            }
+        })
+    }
+
+</script>
+</body>
+</html>

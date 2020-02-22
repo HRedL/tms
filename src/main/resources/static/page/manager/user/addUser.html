@@ -1,0 +1,156 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<head>
+    <link href="../css/tree.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../select2/dist/css/select2.min.css">
+</head>
+<body>
+<form href="#" onsubmit="return false;">
+<div class="div_form">
+
+    <div>
+        <label class="form_label">用户类型<span>*</span></label>
+        <select id="type_select" >
+        </select>
+
+        <label class="form_label">相关用户<span>*</span></label>
+        <select id="rid_select">
+        </select>
+    </div>
+    <br/>
+
+    <br/>
+
+
+    <div>
+        <label class="form_label">密码<span>*</span></label>
+        <input type="text" id="password" class="form_input" placeholder="请输入密码" required>
+    </div>
+
+
+
+</div>
+<div style="clear: both"></div>
+<div class="notice_bot">
+    <div class="l_left"><input type="checkbox" checked="checked"/>保存并关闭窗口</div>
+    <div class="r_right but_p"><button class="but_save" id="save_btn">保存</button><button class="but_close" onclick="Cancel()">关闭</button></div>
+</div>
+</form>
+
+</body>
+<script src="../js/jquery/jQuery-2.2.0.min.js"></script>
+<script src="../select2/dist/js/select2.min.js"></script>
+<script src="../layer/layer.js"></script>
+
+<script>
+
+    $(function () {
+        $("#type_select").select2({
+            data: [
+                {
+                    "id":1,"text":"学生"
+                },
+                {
+                    "id":2,"text":"教师"
+                },
+                {
+                    "id":3,"text":"管理员"
+                }
+            ]
+        });
+        ridBind();
+
+
+    });
+
+    $("#type_select").change(function () {
+        ridBind();
+    });
+
+    //获取项目根路径
+    function getRootPath(){
+        var curWwwPath=window.document.location.href;
+        var pathName=window.document.location.pathname;
+        var pos=curWwwPath.indexOf(pathName);
+        var localhostPaht=curWwwPath.substring(0,pos);
+        var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+        return(localhostPaht+projectName);
+    }
+
+
+    function ridBind(){
+        $("#rid_select").html("");
+
+        var type = $("#type_select").val();
+
+
+        $.ajax({
+            url: getRootPath()+ "/user/getObjectsByType",
+            type: "get",
+            data:{
+                "type":type
+            },
+            success: function (result) {
+                var select_rid_body =[];
+
+                var objects = result.body.objects;
+                $.each(objects,function (i,object) {
+                    select_rid_body[i]={
+                        "id":object.id,
+                        "text":object.name
+                    };
+                });
+                $("#rid_select").select2({
+                    data:select_rid_body
+                });
+            }
+        });
+    }
+
+    function Cancel() {
+        var index = parent.layer.getFrameIndex(window.name);
+        parent.layer.close(index);
+    }
+
+    $("#save_btn").click(function () {
+        var password = $("#password").val();
+        var type = $("#type_select").val();
+        var rid = $("#rid_select").val();
+
+        if (0 >= password.length) {
+            return;
+        }else if (password.length > 10) {
+            layer.msg('密码长度不超过8位', {time: 3000, icon: 5, shift: 6}, function () {});
+            return;
+        }
+
+
+        $.ajax({
+            url: getRootPath() + "/user",
+            type: "post",
+            data: {
+                "password":password,
+                "type":type,
+                "rid":rid
+            },
+            success: function (result) {
+                if(result.success){
+                    layer.msg(result.msg,{time:1000,icon:1,shift:6},function () {});
+                    setTimeout(function(){
+                        Cancel();
+                    },1000);
+                }else{
+                    layer.msg(result.msg,{time:1000,icon:2,shift:6},function () {});
+                }
+            }
+        });
+
+
+
+    });
+
+
+</script>
+</html>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.HomeworkMapper">
+
+    <resultMap id="myHomework" type="com.qdu.tms.Bean.Homework">
+        <id column="ID" property="id"></id>
+        <result column="HNO" property="hno"></result>
+        <result column="STARTTIME" property="startTime"></result>
+        <result column="ENDTIME" property="endTime"></result>
+        <result column="TNUM" property="tnum"></result>
+        <result column="SNUM" property="snum"></result>
+        <association javaType="com.qdu.tms.Bean.Course" select="com.qdu.tms.mapper.CourseMapper.getCourseById" column="CID" property="course"/>
+    </resultMap>
+
+    <resultMap id="myHomework2" type="com.qdu.tms.Bean.Homework">
+        <id column="ID" property="id"></id>
+        <result column="HNO" property="hno"></result>
+        <result column="STARTTIME" property="startTime"></result>
+        <result column="ENDTIME" property="endTime"></result>
+        <result column="TNUM" property="tnum"></result>
+        <result column="SNUM" property="snum"></result>
+        <result column="CID" property="course.id"></result>
+        <!--<association javaType="com.qdu.tms.Bean.Course" select="com.qdu.tms.mapper.CourseMapper.getCourseById" column="CID" property="course"/>-->
+    </resultMap>
+
+    <insert id="addHomework">
+      INSERT INTO HOMEWORK(hno,startTime,endTime,tnum,cid)
+      VALUES(#{hno},#{startTime},#{endTime},#{tnum},#{course.id})
+    </insert>
+
+
+    <update id="increaseHomework">
+        UPDATE HOMEWORK
+        SET SNUM=SNUM+1
+        WHERE id=#{id}
+    </update>
+    <update id="updateHomework">
+        UPDATE HOMEWORK
+        <set>
+            <if test="hno!=null">
+                HNO=#{hno},
+            </if>
+            <if test="startTime!=null">
+                STARTTIME=#{startTime},
+            </if>
+            <if test="endTime!=null ">
+                ENDTIME=#{endTime},
+            </if>
+            <if test="course !=null and course.id!=null">
+                CID=#{course.id},
+            </if>
+            <if test="tnum!=null">
+                TNUM=#{tnum},
+            </if>
+            <if test="snum!=null">
+                SNUM=#{snum},
+            </if>
+        </set>
+        WHERE ID=#{id}
+    </update>
+
+    <delete id="delHomeworkByIds">
+        DELETE FROM HOMEWORK
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--根据id查询-->
+    <select id="getHomeworkById" resultMap="myHomework">
+        SELECT * FROM HOMEWORK WHERE ID=#{id}
+    </select>
+
+
+    <!--查询所有-->
+    <select id="getAllHomeworks" resultMap="myHomework">
+        SELECT * FROM COURSE
+    </select>
+
+
+    <select id="getHomeworksByCondition1" resultMap="myHomework">
+        SELECT * FROM HOMEWORK
+        WHERE TNUM=SNUM AND CID IN (
+            SELECT ID
+            FROM COURSE
+            WHERE TID=#{tid}
+        )
+    </select>
+
+    <select id="getHomeworksByCondition2" resultMap="myHomework">
+        SELECT * FROM HOMEWORK
+        WHERE tnum!=snum AND CID IN (
+        SELECT ID
+        FROM COURSE
+        WHERE TID=#{tid}
+        )
+    </select>
+
+
+    <select id="getHomeworksByTid" resultMap="myHomework">
+        SELECT * FROM HOMEWORK
+        WHERE  CID IN (
+            SELECT ID
+            FROM COURSE
+            WHERE TID=#{tid}
+        )
+    </select>
+
+
+</mapper>

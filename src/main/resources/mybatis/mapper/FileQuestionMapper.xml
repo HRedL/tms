@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.FileQuestionMapper">
+
+    <!-- private String cno;//课程号
+    private String courseName; //课程名
+    private String courseDetail; //课程详细信息
+    private String courseTnum; //课程总人数
+    private Teacher teacher; //授课教师
+-->
+    <resultMap id="myFileQuestion" type="com.qdu.tms.Bean.FileQuestion">
+        <id column="ID" property="id"></id>
+        <result column="FNO" property="fno"></result>
+        <result column="QUESTION" property="question"></result>
+        <!--<result column="PATH" property="path"></result>-->
+        <result column="DETAIL" property="detail"></result>
+        <result column="ANSWER" property="answer"></result>
+        <result column="SCORE" property="score"></result>
+        <association javaType="com.qdu.tms.Bean.Course" select="com.qdu.tms.mapper.CourseMapper.getCourseById" column="CID" property="course"/>
+    </resultMap>
+
+    <!--根据id查询-->
+    <select id="getFileQuestionsByHid" resultMap="myFileQuestion">
+        SELECT * FROM filequestion,homework_question
+        WHERE HOMEWORK_QUESTION.HID=#{hid} AND HOMEWORK_QUESTION.TYPE=2
+              AND HOMEWORK_QUESTION.QID = FILEQUESTION.ID
+    </select>
+
+    <!--根据id查询-->
+    <select id="getFileQuestionById" resultMap="myFileQuestion">
+        SELECT * FROM filequestion WHERE ID=#{hid}
+    </select>
+
+
+
+    <insert id="addFileQuestion">
+        INSERT INTO FILEQUESTION(FNO,QUESTION,SCORE,CID)
+        VALUES(#{fno},#{question},#{score},#{course.id})
+    </insert>
+
+
+    <update id="updateFileQuestion">
+        UPDATE FILEQUESTION
+        <set>
+            <if test="fno!=null">
+                FNO=#{fno},
+            </if>
+            <if test="question!=null">
+                QUESTION=#{question},
+            </if>
+            <if test="detail!=null">
+                DETAIL=#{detail},
+            </if>
+            <if test="answer!=null">
+                ANSWER=#{answer},
+            </if>
+            <if test="score!=null">
+                SCORE=#{score},
+            </if>
+        </set>
+        WHERE ID=#{id}
+    </update>
+
+
+    <delete id="delFileQuestions">
+    DELETE FROM FILEQUESTION
+    WHERE id IN
+    <foreach collection="array" separator="," item="id" open="(" close=")">
+    #{id}
+    </foreach>
+    </delete>
+
+
+    <select id="getFileQuestionsByCid" resultMap="myFileQuestion">
+        SELECT * FROM FILEQUESTION
+        WHERE CID=#{cid}
+    </select>
+
+
+    <select id="getFileQuestion" resultType="com.qdu.tms.Bean.FileQuestion">
+        SELECT * FROM FILEQUESTION
+        WHERE FNO=#{fno}
+    </select>
+
+
+</mapper>

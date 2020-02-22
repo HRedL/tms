@@ -1,0 +1,372 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>在线作业</title>
+<link href="main.css" rel="stylesheet" type="text/css" />
+<link href="test.css" rel="stylesheet" type="text/css" />
+
+<style>
+.hasBeenAnswer {
+	background: #5d9cec;
+	color:#fff;
+}
+
+</style>
+</head>
+
+<body>
+	<div class="main">
+		<!--nr start-->
+		<div class="test_main">
+			<div class="nr_left">
+				<div class="test">
+					<form onsubmit="return false;">
+						<div id="question_content">
+
+
+						</div>
+
+					</form>
+				</div>
+
+			</div>
+			<div class="nr_right">
+				<div class="nr_rt_main">
+					<div class="rt_nr1" id="card_content">
+						
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<!--nr end-->
+		<div class="foot"></div>
+	</div>
+
+<script src="jquery-1.11.3.min.js"></script>
+<script src="jquery.easy-pie-chart.js"></script>
+
+<script src="../js/layer_v2.1/layer/layer.js"></script>
+<!--时间js-->
+<script src="time/jquery.countdown.js"></script>
+<script>
+
+        function getRootPath(){
+            var curWwwPath=window.document.location.href;
+            var pathName=window.document.location.pathname;
+            var pos=curWwwPath.indexOf(pathName);
+            var localhostPaht=curWwwPath.substring(0,pos);
+            var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+            return(localhostPaht+projectName);
+        }
+
+
+		
+		
+		$(function() {
+            initPage();
+
+		});
+
+
+		function initPage(){
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            $.ajax({
+                url: getRootPath() + "/homework/getQuestionsByHid",
+                type: "get",
+                data: {
+                    "hid":hid
+				},
+                success: function (result) {
+
+                    var card_content='';
+                    card_content+='<div class="rt_nr1_title">';
+                    card_content+='<h1>答题卡</h1>';
+                    card_content+=' <p class="test_time">';
+                    card_content+='<span id="countdown_2" class="countdown"></span>';
+                    card_content+='</p>';
+                    card_content+='</div>';
+
+                    var question_content='';
+
+                    // var homeworkQuestion=result.body.homeworkQuestion;
+                    //
+                    // var endTime = homeworkQuestion.homework.endTime;
+                    //
+                    // if(homeworkQuestion.singleQuestions!=null){
+                    //
+                    //     var singleQuestions = homeworkQuestion.singleQuestions;
+
+                        //
+                    var homeworkQuestion=result.body.homeworkQuestion;
+
+                    var endTime = homeworkQuestion.homework.endTime;
+                    if(homeworkQuestion.singleQuestions!=null){
+                        var singleQuestions=homeworkQuestion.singleQuestions;
+
+                        var singleQuestionPage="";
+                        var singleQuestionCard="";
+
+                        var totalGrade=0;
+                        var count=0;
+
+                        $.each(singleQuestions,function (i,singleQuestion) {
+                            count++;
+                            totalGrade+=singleQuestion.score;
+                            var index=i+1;
+                            //拼接单选题题目
+                            singleQuestionPage+='<li id="qu_0_'+index+'">';
+                            singleQuestionPage+='<input type="hidden" value="'+singleQuestion.id+'" id="qu_0_'+index+'_id"/>';
+                            singleQuestionPage+='<div class="test_content_nr_tt">';
+                            singleQuestionPage+='<i>'+index+'</i><span>('+singleQuestion.score+'分)</span><span>'+singleQuestion.question+'</span><b class="icon iconfont">&#xe881;</b>';
+                            singleQuestionPage+='</div>';
+                            //拼接单选题卡片
+                            singleQuestionCard+='<li><a href="#qu_0_'+index+'">'+index+'</a></li>';
+
+                            //拼接单选题选项
+                            singleQuestionPage+='<div class="test_content_nr_main"><ul>';
+
+                            if(singleQuestion.questionA!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='A.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionA+'</p>';
+                                singleQuestionPage+='</li>';
+                            }
+
+                            if(singleQuestion.questionB!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='B.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionB+'</p>';
+                                singleQuestionPage+='</li>';
+                            }
+                            if(singleQuestion.questionC!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='C.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionC+'</p>';
+                                singleQuestionPage+='</li>';
+                            }
+                            if(singleQuestion.questionD!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='D.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionD+'</p>';
+                                singleQuestionPage+='</li>';
+
+                            }
+
+                            singleQuestionPage+='<li class="option" style="font-weight: bold">';
+                            singleQuestionPage+='我的答案:';
+                            singleQuestionPage+='<span id="myAnswer_'+index+'">无</span>';
+                            singleQuestionPage+='</li>';
+
+                            singleQuestionPage+='<li class="option" style="color: red; font-weight: bold">';
+                            singleQuestionPage+='正确答案:';
+                            singleQuestionPage+='<span id="trueAnswer_'+index+'">无</span>';
+                            singleQuestionPage+='</li>';
+                            singleQuestionPage+='</ul></div></li>';
+
+                        });
+
+                        card_content+='<div class="rt_content">';
+                        card_content+='<div class="rt_content_tt">';
+                        card_content+='<h2>单选题</h2>';
+                        card_content+='<span>'+'共'+count+'题'+'</span>';
+                        card_content+='<input type="hidden" id="singleQuestionCount" value="'+count+'"/>';
+                        card_content+='</div>';
+                        card_content+='<div class="rt_content_nr answerSheet">';
+                        card_content+='<ul>';
+                        card_content+=singleQuestionCard;
+                        card_content+='</ul>';
+                        card_content+='</div>';
+                        card_content+='</div>';
+
+
+                        question_content+='<div class="test_content">';
+                        question_content+='<div class="test_content_title">';
+                        question_content+='<h2>单选题</h2>';
+                        question_content+='<p>';
+                        question_content+='共'+count+'题，合计'+totalGrade+'分';
+                        question_content+='</p>';
+                        question_content+='</div>';
+                        question_content+='</div>';
+                        question_content+='<div class="test_content_nr">';
+                        question_content+='<ul id="singleQuesiton">';
+                        question_content+=singleQuestionPage;
+                        question_content+='</ul>';
+                        question_content+='</div>';
+
+                        // var singleQuestionTitle =
+
+                        // $("#singleQuestionTitle").html(singleQuestionTitle);
+                        // $("#singleQuesiton").html(singleQuestionPage);
+
+                    }
+                    if(homeworkQuestion.fileQuestions!=null){
+                        var fileQuestions = homeworkQuestion.fileQuestions;
+
+                        // if(endTime==null){
+                        //     endTime=fileQuestions[0].homework.endTime;
+                        // }
+
+                        var fileQuestionPage="";
+                        var fileQuestionCard="";
+
+                        var totalGrade=0;
+                        var count1=0;
+
+                        $.each(fileQuestions,function (i,fileQuestion) {
+                            count1++;
+                            totalGrade+=fileQuestion.score;
+                            var index=i+1;
+                            //拼接单选题题目
+                            fileQuestionPage+='<li id="qu_1_'+index+'">';
+                            fileQuestionPage+='<input type="hidden" value="'+fileQuestion.id+'" id="qu_1_'+index+'_id"/>';
+                            fileQuestionPage+='<div class="test_content_nr_tt">';
+                            fileQuestionPage+='<i>'+index+'</i><span>('+fileQuestion.score+'分)</span><span>'+fileQuestion.question+'</span>';
+                            fileQuestionPage+='<br>';
+                            fileQuestionPage+='<a href="'+getRootPath()+'/fileQuestion/downloadDetail?id='+fileQuestion.id+'">下载附件</a>';
+
+                            fileQuestionPage+='<b class="icon iconfont">&#xe881;</b>';
+                            fileQuestionPage+='</div>';
+                            //拼接单选题卡片
+                            fileQuestionCard+='<li><a href="#qu_1_'+index+'">'+index+'</a></li>';
+                            //拼接单选题选项
+                            fileQuestionPage+='<div class="test_content_nr_main"><ul>';
+
+                            fileQuestionPage+='<br>';
+                            fileQuestionPage+='<a href="'+getRootPath()+'/fileQuestion/downloadAnswer?id='+fileQuestion.id+'">下载答案</a>';
+
+                            fileQuestionPage+='</ul></div></li>';
+                        });
+
+                        card_content+='<div class="rt_content">';
+                        card_content+='<div class="rt_content_tt">';
+                        card_content+='<h2>文件上传题</h2>';
+                        card_content+='<span>'+'共'+count1+'题'+'</span>';
+                        card_content+='<input type="hidden" id="fileQuestionCount" value="'+count1+'"/>';
+                        card_content+='</div>';
+                        card_content+='<div class="rt_content_nr answerSheet">';
+                        card_content+='<ul>';
+                        card_content+=fileQuestionCard;
+                        card_content+='</ul>';
+                        card_content+='</div>';
+                        card_content+='</div>';
+
+
+                        question_content+='<div class="test_content">';
+                        question_content+='<div class="test_content_title">';
+                        question_content+='<h2>文件上传题</h2>';
+                        question_content+='<p>';
+                        question_content+='共'+count1+'题，合计'+totalGrade+'分';
+                        question_content+='</p>';
+                        question_content+='</div>';
+                        question_content+='</div>';
+                        question_content+='<div class="test_content_nr">';
+                        question_content+='<ul id="fileQuesiton">';
+                        question_content+=fileQuestionPage;
+                        question_content+='</ul>';
+                        question_content+='</div>';
+                    }
+
+
+                    $("#question_content").html(question_content);
+                    $("#card_content").html(card_content);
+
+                    countdownPage(endTime);
+                    initSingleQuestion();
+
+
+                    var currentTime = new Date();
+                    var customTime= new Date(Date.parse(endTime));
+
+                    if(currentTime>customTime){
+                        for(var k=1;k<=count;k++){
+
+                            $("#trueAnswer_"+k).html(singleQuestions[k-1].answer);
+						}
+					}
+
+                }
+            });
+
+		}
+
+
+		function initSingleQuestion(){
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            var sid =sessionStorage.getItem("user_id");
+            var singleQuestionCount= $("#singleQuestionCount").val();
+
+            $.ajax({
+                url: getRootPath() + "/singleQuestion/getSingleQuestionsByHidAndSid",
+                type: "get",
+                data: {
+                    "hid": hid,
+					"sid":sid
+                },
+                success: function (result) {
+                    var homeworkQuestionStudents=result.body.homeworkQuestionStudents;
+                    j=0;
+                    for(var i=1;i<=singleQuestionCount;i++){
+                        var qid= $("#qu_0_"+i+"_id").val();
+                        for(var j=0;j<homeworkQuestionStudents.length;j++){
+                            if(Number(qid)===homeworkQuestionStudents[j].homeworkQuestion.qid){
+                                hasBeenAnswer('qu_0_'+i);
+                                $("#myAnswer_"+i).html(homeworkQuestionStudents[j].answer);
+                            }
+						}
+
+
+                    }
+                }
+            });
+
+		}
+
+
+
+
+
+
+
+        function hasBeenAnswer(examId){
+            var cardLi = $('a[href=#' + examId + ']');
+            if(!cardLi.hasClass('hasBeenAnswer')){
+                cardLi.addClass('hasBeenAnswer');
+            }
+        }
+
+
+        function countdownPage(time){
+
+            $('.countdown').each(function() {
+                $(this).countdown(time, function(event) {
+                    $(this).text(
+                        event.strftime('%D 天 %H:%M:%S')
+                    );
+                });
+            });
+
+
+            $("#countdown_2").on('finish.countdown', function() {
+
+                window.location.reload();
+
+            });
+
+        }
+
+	</script>
+
+
+</body>
+
+</html>

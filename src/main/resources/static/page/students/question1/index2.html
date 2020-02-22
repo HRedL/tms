@@ -1,0 +1,391 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>远程教育考试平台_在线考试</title>
+<link href="main.css" rel="stylesheet" type="text/css" />
+<link href="test.css" rel="stylesheet" type="text/css" />
+
+<style>
+.hasBeenAnswer {
+	background: #5d9cec;
+	color:#fff;
+}
+
+</style>
+</head>
+
+<body>
+	<div class="main">
+		<!--nr start-->
+		<div class="test_main">
+			<div class="nr_left">
+				<div class="test">
+					<form onsubmit="return false;">
+						<div class="test_title">
+
+
+							<p class="test_time">
+								<span class="countdown" id="countdown_1"></span>
+							</p>
+							<input type="button" id="btn_jiaojuan" value="交卷">
+							<input type="button" id="btn_baoliu" value="保留">
+						</div>
+						<div id="question_content">
+
+
+						</div>
+
+					</form>
+				</div>
+
+			</div>
+			<div class="nr_right">
+				<div class="nr_rt_main">
+					<div class="rt_nr1" id="card_content">
+						
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<!--nr end-->
+		<div class="foot"></div>
+	</div>
+
+<script src="jquery-1.11.3.min.js"></script>
+<script src="jquery.easy-pie-chart.js"></script>
+
+<script src="../js/layer_v2.1/layer/layer.js"></script>
+<!--时间js-->
+<script src="time/jquery.countdown.js"></script>
+<script>
+
+
+
+        function getRootPath(){
+            var curWwwPath=window.document.location.href;
+            var pathName=window.document.location.pathname;
+            var pos=curWwwPath.indexOf(pathName);
+            var localhostPaht=curWwwPath.substring(0,pos);
+            var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+            return(localhostPaht+projectName);
+        }
+
+
+		
+		
+		$(function() {
+            initPage();
+
+		});
+
+
+		function initPage(){
+            //获取url的单个名为id的参数
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            $.ajax({
+                url: getRootPath() + "/homework/getQuestionsByHid",
+                type: "get",
+                data: {
+                    "hid":hid
+				},
+                success: function (result) {
+                    var card_content='';
+                    card_content+='<div class="rt_nr1_title">';
+                    card_content+='<h1>答题卡</h1>';
+                    card_content+=' <p class="test_time">';
+                    card_content+='<span class="countdown"></span>';
+                    card_content+='</p>';
+                    card_content+='</div>';
+
+                    var question_content='';
+                    var endTime=null;
+                    if(result.body.singleQuestions!=null){
+                        var singleQuestions=result.body.singleQuestions;
+
+                        if(endTime==null){
+                            endTime=singleQuestions[0].homework.endTime;
+                        }
+
+                        var singleQuestionPage="";
+                        var singleQuestionCard="";
+
+                        var totalGrade=0;
+                        var count=0;
+
+                        $.each(singleQuestions,function (i,singleQuestion) {
+                            count++;
+                            totalGrade+=singleQuestion.score;
+                            var index=i+1;
+                            //拼接单选题题目
+                            singleQuestionPage+='<li id="qu_0_'+index+'">';
+                            singleQuestionPage+='<input type="hidden" value="'+singleQuestion.id+'" id="qu_0_'+index+'_id"/>';
+                            singleQuestionPage+='<div class="test_content_nr_tt">';
+                            singleQuestionPage+='<i>'+index+'</i><span>('+singleQuestion.score+'分)</span><span>'+singleQuestion.question+'</span><b class="icon iconfont">&#xe881;</b>';
+                            singleQuestionPage+='</div>';
+                            //拼接单选题卡片
+                            singleQuestionCard+='<li><a href="#qu_0_'+index+'">'+index+'</a></li>';
+
+                            //拼接单选题选项
+                            singleQuestionPage+='<div class="test_content_nr_main"><ul>';
+
+                            if(singleQuestion.questionA!=null){
+                                singleQuestionPage+='  <li class="option">';
+                                singleQuestionPage+=' <input type="radio" class="radioOrCheck" name="answer'+index+'" value="A"  id="0_answer_'+index+'_option_1"/> ';
+                                singleQuestionPage+='<label for="0_answer_'+index+'_option_1" >A.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionA+'</p>';
+                                singleQuestionPage+=' </label></li>';
+                            }
+
+                            if(singleQuestion.questionB!=null){
+                                singleQuestionPage+='  <li class="option">';
+                                singleQuestionPage+=' <input type="radio" class="radioOrCheck" name="answer'+index+'" value="B" id="0_answer_'+index+'_option_2"/>';
+                                singleQuestionPage+='<label for="0_answer_'+index+'_option_2">B.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionB+'</p>';
+                                singleQuestionPage+=' </label></li>';
+                            }
+                            if(singleQuestion.questionC!=null){
+                                singleQuestionPage+='  <li class="option">';
+                                singleQuestionPage+=' <input type="radio" class="radioOrCheck" name="answer'+index+'" value="C" id="0_answer_'+index+'_option_3"/>';
+                                singleQuestionPage+='<label for="0_answer_'+index+'_option_3">C.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionC+'</p>';
+                                singleQuestionPage+=' </label></li>';
+                            }
+                            if(singleQuestion.questionD!=null){
+                                singleQuestionPage+='  <li class="option">';
+                                singleQuestionPage+=' <input type="radio" class="radioOrCheck" name="answer'+index+'" value="D" id="0_answer_'+index+'_option_4"/>';
+                                singleQuestionPage+='<label for="0_answer_'+index+'_option_4">D.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionD+'</p>';
+                                singleQuestionPage+=' </label></li>';
+
+                            }
+                            singleQuestionPage+='</ul></div></li>';
+
+                        });
+                        singleQuestionPage+='<li id="qu_0_'+1+'">';
+                        singleQuestionPage+='<div class="test_content_nr_tt">';
+                        singleQuestionPage+='<i>'+2+'</i><span>(分)</span><span>'+'找一个问题非常长的问题来试试这个东西到底管不管用，如果不管用，我还不知道该咋办呢，希望你能自动换个行如何，谢谢您了'+'</span><b class="icon iconfont">&#xe881;</b>';
+                        singleQuestionPage+='</div>';
+
+                        singleQuestionPage+='<div class="test_content_nr_main"><ul>';
+                        singleQuestionPage+='<a  onclick="addRole('+hid+')" href="#">文件上传</a>';
+                        singleQuestionPage+='</ul></div></li>';
+
+
+
+
+
+                        card_content+='<div class="rt_content">';
+                        card_content+='<div class="rt_content_tt">';
+                        card_content+='<h2>单选题</h2>';
+                        card_content+='<span>'+'共'+count+'题'+'</span>';
+                        card_content+='<input type="hidden" id="singleQuestionCount" value="'+count+'"/>';
+                        card_content+='</div>';
+                        card_content+='<div class="rt_content_nr answerSheet">';
+                        card_content+='<ul>';
+                        card_content+=singleQuestionCard;
+                        card_content+='</ul>';
+                        card_content+='</div>';
+                        card_content+='</div>';
+
+
+                        question_content+='<div class="test_content">';
+                        question_content+='<div class="test_content_title">';
+                        question_content+='<h2>单选题</h2>';
+                        question_content+='<p>';
+                        question_content+='共'+count+'题，合计'+totalGrade+'分';
+                        question_content+='</p>';
+                        question_content+='</div>';
+                        question_content+='</div>';
+                        question_content+='<div class="test_content_nr">';
+                        question_content+='<ul id="singleQuesiton">';
+                        question_content+=singleQuestionPage;
+                        question_content+='</ul>';
+                        question_content+='</div>';
+
+                    }
+
+
+
+
+
+                    $("#question_content").html(question_content);
+                    $("#card_content").html(card_content);
+                    countdownPage(endTime);
+                }
+            });
+
+		}
+
+
+
+		function hasBeenAnswer(examId){
+            var cardLi = $('a[href=#' + examId + ']');
+			alert(cardLi);
+            if(!cardLi.hasClass('hasBeenAnswer')){
+                cardLi.addClass('hasBeenAnswer');
+            }
+		}
+
+        $(document).on("click","li.option label",function (){
+
+            var examId = $(this).closest('.test_content_nr_main').closest('li').attr('id'); // 得到题目ID
+            var cardLi = $('a[href=#' + examId + ']'); // 根据题目ID找到对应答题卡
+            // 设置已答题
+            if(!cardLi.hasClass('hasBeenAnswer')){
+                cardLi.addClass('hasBeenAnswer');
+            }
+        });
+
+        function countdownPage(time){
+
+            $('.countdown').each(function() {
+                $(this).countdown(time, function(event) {
+                    $(this).text(
+                        event.strftime('%D 天 %H:%M:%S')
+                    );
+                });
+            });
+
+            $("#countdown_1").on('finish.countdown', function(){
+                jiaoJuan();
+            });
+
+        }
+
+        $("#btn_baoliu").click(function () {
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            var sid =sessionStorage.getItem("user_id");
+
+            var singleQuestionCount= $("#singleQuestionCount").val();
+            //题目数量大于0
+            if(singleQuestionCount>0){
+            	var qidData=[];
+            	var answerData=[];
+            	var count=0;
+                for(var i=1;i<=singleQuestionCount;i++){
+                    var answer=getRadio(i);
+                    if(answer!=null){
+                        count++;
+                        var qid= $("#qu_0_"+i+"_id").val();
+                        qidData.push(qid);
+                        answerData.push(answer);
+                    }
+                }
+                //回答数量大于0
+                if(count>0){
+
+                    $.ajax({
+                        url: getRootPath() + "/singleQuestion/addQuestionStudent",
+                        type: "post",
+                        data:{
+                            sid:sid,
+							hid:hid,
+                            qids:qidData,
+                            answers:answerData
+                        },
+                        success: function (result) {
+                            if(result.success){
+                                layer.msg(result.msg,{time:1000,icon:1,shift:6},function () {});
+							}else{
+                                layer.msg(result.msg,{time:1000,icon:2,shift:6},function () {});
+							}
+                        }
+                    });
+				}
+
+			}
+		});
+
+        $("#btn_jiaojuan").click(function () {
+            jiaoJuan();
+        });
+
+        function jiaoJuan(){
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            var sid =sessionStorage.getItem("user_id");
+
+            var singleQuestionCount= $("#singleQuestionCount").val();
+            //题目数量大于0
+            if(singleQuestionCount>0){
+                var qidData=[];
+                var answerData=[];
+                var count=0;
+                for(var i=1;i<=singleQuestionCount;i++){
+                    var answer=getRadio(i);
+                    if(answer!=null){
+                        count++;
+                        var qid= $("#qu_0_"+i+"_id").val();
+                        qidData.push(qid);
+                        answerData.push(answer);
+                    }
+                }
+                //回答数量大于0
+                if(count>0){
+
+                    $.ajax({
+                        url: getRootPath() + "/singleQuestion/submitQuestionStudent",
+                        type: "post",
+                        data:{
+                            sid:sid,
+                            hid:hid,
+                            qids:qidData,
+                            answers:answerData
+                        },
+                        success: function (result) {
+                            if(result.success){
+                                layer.msg(result.msg,{time:1000,icon:1,shift:6},function () {});
+
+                                setTimeout(function(){  //使用  setTimeout（）方法设定定时1000毫秒
+                                    window.location.href=getRootPath()+"/page/students/question2/finished.html";//页面刷新
+
+                                },1000);
+                            }else{
+                                layer.msg(result.msg,{time:1000,icon:2,shift:6},function () {});
+                            }
+                        }
+                    });
+                }else{
+                    layer.msg("您还未答题",{time:1000,icon:1,shift:6},function () {});
+                }
+
+            }
+        }
+
+
+
+
+        function getRadio(index){
+            return $('input[name="answer'+index+'"]:checked').val();
+        }
+
+        function addRole(hid){
+            layer.open({
+                type: 2,
+                title: '上传文件',
+                shadeClose: true,
+                shade: 0.5,
+                skin: 'layui-layer-rim',
+                closeBtn:1,
+                area: ['700px', '420px'],
+                content: '../plupload-master/examples/jquery/homework_upload.html?hid='+hid
+            });
+        }
+
+	</script>
+
+
+</body>
+
+</html>

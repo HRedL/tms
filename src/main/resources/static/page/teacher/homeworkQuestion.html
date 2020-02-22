@@ -1,0 +1,334 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
+    <title></title>
+    <link href="js/bstable/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="js/bstable/css/bootstrap-table.css" rel="stylesheet" type="text/css">
+    <link href="css/table.css" rel="stylesheet" type="text/css" />
+    <link href="css/news.css" rel="stylesheet" type="text/css" />
+    <link href="select2/dist/css/select2.min.css" rel="stylesheet" type="text/css" />
+
+</head>
+<body style="background-color: #ecf0f5;font-family: 微软雅黑;color: #475059;min-width: 1000px;overflow: auto">
+
+
+<div class="modal fade" tabindex="-1" role="dialog" id="add_role_modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">作业问题分配</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <form role="form" class="form-inline">
+                            <select id="question_type">
+                            </select>
+                        </form>
+                        <hr>
+                        <form id="add_role_form" role="form" class="form-inline">
+                            <input type="hidden" id="add_role_id" name="id"/>
+                            <div class="form-group">
+                                <label>未分配题目列表</label><br>
+                                <select id="left_select" name="unassignRoleIds" class="form-control" multiple size="10" style="width:200px;overflow-y:auto;">
+
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <ul>
+                                    <li id="left2right_btn" class="btn btn-default glyphicon glyphicon-chevron-right"></li>
+                                    <br>
+                                    <li id="right2left_btn" class="btn btn-default glyphicon glyphicon-chevron-left" style="margin-top:20px;"></li>
+                                    <br>
+                                </ul>
+                            </div>
+                            <div class="form-group" style="margin-left:40px;">
+                                <label>已分配题目列表</label><br>
+                                <select id="right_select" name="assignRoleIds" class="form-control" multiple size="10" style="width:200px;overflow-y:auto;">
+
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!--<div class="modal-footer">-->
+                <!--<button type="button" class="btn btn-default" id="add_role_modal_close_btn">关闭</button>-->
+            <!--</div>-->
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="notice_main">
+    <h6>管理作业</h6>
+
+
+    <div class="notice_check">
+        <div class="btn-group l_left" style="margin-right: 4px">
+            <button type="button" class="btn btn-default change" style="height: 30px;line-height: 30px;padding: 0 12px !important;font-size: 12px">选择条件</button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height: 30px;line-height: 30px">
+                <span class="caret"></span>
+                <span class="sr-only"></span>
+            </button>
+            <!--<select>-->
+
+            <!--<option>课程号</option>-->
+            <!--<option>课程名</option>-->
+            <!--<option>课程描述</option>-->
+            <!--<option>课程描述</option>-->
+            <!--</select>-->
+            <ul class="dropdown-menu">
+                <li class="cno">课程号</li>
+                <li class="name">课程名</li>
+                <li class="detail">课程描述</li>
+            </ul>
+        </div>
+        <div class="l_left">
+            <input id="criteria_text" type="text" class="find_input">
+            <input id="criteria_type" type="hidden" value="">
+        </div>
+        <button id="query_btn" class="check_btn">查询</button>
+        <div class="notice_nav r_right">
+            <a class="btn btn-default" onclick="addUser()"><span class="glyphicon glyphicon-plus"></span>新增</a>
+            <a class="btn btn-default" onclick="delUser()"><span class="glyphicon glyphicon-remove"></span>删除</a>
+        </div>
+    </div>
+    <table id="table" class="table_style" style="margin: 0 auto" > </table>
+</div>
+<script src="js/jquery/jQuery-2.2.0.min.js"></script>
+<script src="js/bstable/js/bootstrap.min.js"></script>
+<script src="js/bstable/js/bootstrap-table.js"></script>
+<script src="js/bstable/js/bootstrap-table-zh-CN.min.js"></script>
+<script src="js/layer_v2.1/layer/layer.js"></script>
+<script src="select2/dist/js/select2.min.js"></script>
+<script>
+    $(function(){
+       li_click();
+    });
+
+    function getRootPath(){
+        var curWwwPath=window.document.location.href;
+        var pathName=window.document.location.pathname;
+        var pos=curWwwPath.indexOf(pathName);
+        var localhostPaht=curWwwPath.substring(0,pos);
+        var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+        return(localhostPaht+projectName);
+    }
+
+
+    function li_click(){
+        var tid = sessionStorage.getItem("user_id");
+
+        $.ajax({
+            url: getRootPath() + "/homework/getHomeworksByTid",
+            type: "get",
+            data:{
+                "tid": tid
+            },
+            success: function (result) {
+                var jsonData=[];
+                var homeworks = result.body.homeworks;
+                $.each(homeworks,function (i,homework) {
+                    var data={};
+                    data["id"]=homework.id;
+                    data["hno"]=homework.hno;
+                    data["start_time"]=homework.startTime;
+                    data["end_time"]=homework.endTime;
+                    data["tnum"]=homework.tnum;
+                    data["snum"]=homework.snum;
+                    data["course_name"]=homework.course.name;
+                    data["oper1"]='<a class="btn btn-default btn-xs" onclick="updateUser('+homework.id+')"><span class="glyphicon glyphicon-pencil"></span>编辑</a>';
+                    data["oper2"]='<a class="btn btn-default btn-xs" onclick="assignQuestion('+homework.id+')"><span class="glyphicon glyphicon-pencil"></span>分配1</a>';
+                    data["oper3"]='<a href="'+getRootPath()+'/page/teacher/question3/index.html?hid='+homework.id+'"'+'>分配2</a>';
+
+                    jsonData.push(data);
+                });
+
+
+                //[   {"hno":"001","start_time":"12-01 10:30","end_time":"12.30 10:30","tnum":"30","snum":"10","course_name":"数据库","result":"<a href='/id'>做作业</a>"}],
+                $("#table").bootstrapTable('destroy').bootstrapTable({
+                    method: "get",
+                    striped: true,
+                    singleSelect: false,
+                    data: jsonData,
+                    // url: "json/log.json",
+                    dataType: "json",
+                    pagination: true, //分页
+                    pageSize: 10,
+                    pageNumber: 1,
+                    search: false, //显示搜索框
+                    contentType: "application/x-www-form-urlencoded",
+                    queryParams: null,
+                    columns: [
+                        {
+                            checkbox: "true",
+                            field: 'check',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title:"ID",
+                            field: 'id',
+                            visible:false
+                        },
+                        {
+                            title: "作业号",
+                            field: 'hno',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title: '开始时间',
+                            field: 'start_time',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title: '结束时间',
+                            field: 'end_time',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+
+                        {
+                            title: '总人数',
+                            field: 'tnum',
+                            align: 'center'
+                        },
+                        {
+                            title: '已完成人数',
+                            field: 'snum',
+                            align: 'center'
+                        },
+                        {
+                            title: '课程名',
+                            field: 'course_name',
+                            align: 'center'
+                        },
+                        {
+                            title: '操作',
+                            field: 'oper1',
+                            align: 'center'
+
+                        },
+                        {
+                            title: '操作',
+                            field: 'oper2',
+                            align: 'center'
+                        },
+                        {
+                            title: '操作',
+                            field: 'oper3',
+                            align: 'center'
+                        }
+                    ]
+                });
+            }
+        });
+    }
+
+    function paramsMatter(value,row,index) {
+        var span=document.createElement('span');
+        span.setAttribute('title',value);
+        span.innerHTML = value;
+        return span.outerHTML;
+    }
+
+    function formatTableUnit(value, row, index) {
+        return {
+            css: {
+                "white-space": 'nowrap',
+                "text-overflow": 'ellipsis',
+                "overflow": 'hidden'
+            }
+        }
+    }
+
+    function delUser() {
+        var rows=$("#table").bootstrapTable('getSelections');
+        var items = [];
+        $.each(rows, function (index, row) {
+            items.push(row.id);
+        });
+
+        var number = items.length;
+
+        if (number === 0) {
+            layer.msg('请选择删除的作业信息', {period: 3000, icon: 1, shift: 6});
+        } else {
+            layer.confirm("删除与该作业相关的所有信息,是否继续", {icon: 3, title: "提示"}, function (cindex) {
+                $.ajax({
+                    url: getRootPath()+"/homework/delHomeworks",
+                    type: "delete",
+                    data: {
+                        ids: items
+                    },
+                    success: function (result) {
+                        if(result.success){
+
+                            layer.msg(result.msg,{time:1000,icon:1,shift:6});
+                        }else{
+                            layer.msg(result.msg,{time:1000,icon:2,shift:6});
+                        }
+                        layer.close(cindex);
+
+                        setTimeout(function(){  //使用  setTimeout（）方法设定定时1000毫秒
+                            //window.location.reload();//页面刷新
+                            // var cid = $("#cid").val();
+                            li_click()
+
+                        },1000);
+                    }
+                });
+
+            });
+        }
+    }
+
+    function addUser(){
+
+        var cid = $("#cid").val();
+
+        layer.open({
+            type: 2,
+            title: '添加详情',
+            shadeClose: true,
+            shade: 0.5,
+            skin: 'layui-layer-rim',
+            closeBtn:1,
+            area: ['600px', '400px'],
+            content: 'addHomeworkQuestion.html',
+            end:function(){
+                var cid = $("#cid").val();
+                li_click(cid)
+                // window.location.reload();
+            }
+        });
+    }
+
+    function updateUser(id){
+        layer.open({
+            type: 2,
+            title: '添加详情',
+            shadeClose: true,
+            shade: 0.5,
+            skin: 'layui-layer-rim',
+            closeBtn:1,
+            area: ['600px', '350px'],
+            content: 'updateHomeworkQuestion.html?id='+id,
+            end:function(){
+                // window.location.reload();
+                var cid = $("#cid").val();
+                li_click(cid)
+            }
+        });
+    }
+
+
+
+</script>
+</body>
+</html>

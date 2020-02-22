@@ -1,0 +1,200 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
+    <title></title>
+    <link href="js/bstable/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="js/bstable/css/bootstrap-table.css" rel="stylesheet" type="text/css">
+    <link href="css/table.css" rel="stylesheet" type="text/css" />
+    <link href="css/news.css" rel="stylesheet" type="text/css" />
+</head>
+<body style="background-color: #ecf0f5;font-family: 微软雅黑;color: #475059;min-width: 1000px;overflow: auto">
+<div class="news_main">
+    <div class="l_left news_left">
+        <h6>我的作业</h6>
+        <ul class="log_nav">
+            <li id="unfinished" class="log_active">已收齐</li>
+            <li id="finishing">未收齐</li>
+            <!--<li id="finished"></li>-->
+        </ul>
+    </div>
+    <div class="l_left news_right">
+        <h6>作业管理</h6>
+
+        <!--<div class="notice_check">-->
+            <!--<div class="btn-group l_left" style="margin-right: 4px">-->
+                <!--<button type="button" class="btn btn-default change" style="height: 30px;line-height: 30px;padding: 0 12px !important;font-size: 12px">课程名</button>-->
+                <!--<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height: 30px;line-height: 30px">-->
+                    <!--<span class="caret"></span>-->
+                    <!--<span class="sr-only"></span>-->
+                <!--</button>-->
+                <!--&lt;!&ndash;<ul class="dropdown-menu">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<li>课程名</li>&ndash;&gt;-->
+                <!--&lt;!&ndash;</ul>&ndash;&gt;-->
+            <!--</div>-->
+            <!--<div class="l_left">-->
+                <!--<input id="criteria_text" type="text" class="find_input">-->
+                <!--<input id="criteria_type" type="hidden" value="course_name">-->
+
+            <!--</div>-->
+            <!--<button class="check_btn">查询</button>-->
+
+            <!--<div class="clear"></div>-->
+        <!--</div>-->
+        <ul class="news_table">
+            <li>
+                <table id="table" class="table_style" style="margin: 0 auto" ></table>
+            </li>
+            <li style="display: none">
+                <table id="table1" class="table_style" style="margin: 0 auto" ></table>
+            </li>
+            <li style="display: none">
+                <table id="table2" class="table_style" style="margin: 0 auto" ></table>
+            </li>
+        </ul>
+
+    </div>
+    <div class="clear"></div>
+
+</div>
+<script src="js/jquery/jQuery-2.2.0.min.js"></script>
+<script src="js/bstable/js/bootstrap.min.js"></script>
+<script src="js/bstable/js/bootstrap-table.js"></script>
+<script src="js/bstable/js/bootstrap-table-zh-CN.min.js"></script>
+<script src="js/layer_v2.1/layer/layer.js"></script>
+<script>
+    $(function(){
+        nav();
+        change();
+        li_click($("#table"),1);
+
+    });
+    function change(){
+        $(".dropdown-menu>li").click(function(){
+            $(".change").html($(this).html())
+        })
+    }
+    //下拉列表点击
+    $('li').click(function(){
+        var criteria_type =  $(this).attr("class");
+        $("#criteria_type").val(criteria_type);
+    });
+
+    function nav(){
+        $(".log_nav li").each(function(index){
+            $(this).click(function(){
+                $(".log_nav li").removeClass("log_active");
+                $(this).addClass("log_active");
+                $(".news_table>li").eq(index).show().siblings("li").stop().hide();
+                // li_click($(this).attr("id"));
+            })
+
+        })
+    }
+
+    function getRootPath(){
+        var curWwwPath=window.document.location.href;
+        var pathName=window.document.location.pathname;
+        var pos=curWwwPath.indexOf(pathName);
+        var localhostPaht=curWwwPath.substring(0,pos);
+        var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+        return(localhostPaht+projectName);
+    }
+
+    $("#unfinished").click(function () {
+        li_click($("#table"),1);
+    });
+    $("#finishing").click(function () {
+       li_click($("#table1"),2);
+    });
+
+    function li_click(selector, value){
+        var data={};
+        data["tid"] = sessionStorage.getItem("user_id");
+        data["type"] = value;
+
+        $.ajax({
+            url: getRootPath() + "/getHomeworksByCondition",
+            type: "get",
+            data: data,
+            success: function (result) {
+                var jsonData=[];
+                var homeworks = result.body.homeworks;
+                $.each(homeworks,function (i,homework) {
+                    var data={};
+                    data["hno"]=homework.hno;
+                    data["start_time"]=homework.startTime;
+                    data["end_time"]=homework.endTime;
+                    data["tnum"]=homework.tnum;
+                    data["snum"]=homework.snum;
+                    data["course_name"]=homework.course.name;
+                    data["result"]="<a href='"+homework.id+"'>查询详情</a>";
+                    jsonData.push(data);
+                });
+
+
+                //[   {"hno":"001","start_time":"12-01 10:30","end_time":"12.30 10:30","tnum":"30","snum":"10","course_name":"数据库","result":"<a href='/id'>做作业</a>"}],
+                selector.bootstrapTable('destroy').bootstrapTable({
+                    method: "get",
+                    striped: true,
+                    singleSelect: false,
+                    data: jsonData,
+                    // url: "json/log.json",
+                    dataType: "json",
+                    pagination: true, //分页
+                    pageSize: 10,
+                    pageNumber: 1,
+                    search: false, //显示搜索框
+                    contentType: "application/x-www-form-urlencoded",
+                    queryParams: null,
+                    columns: [
+                        {
+                            title: "作业号",
+                            field: 'hno',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title: '开始时间',
+                            field: 'start_time',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title: '结束时间',
+                            field: 'end_time',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+
+                        {
+                            title: '总人数',
+                            field: 'tnum',
+                            align: 'center'
+                        },
+                        {
+                            title: '已完成人数',
+                            field: 'snum',
+                            align: 'center'
+                        },
+                        {
+                            title: '课程名',
+                            field: 'course_name',
+                            align: 'center'
+                        },
+                        {
+                            title: '完成作业',
+                            field: 'result',
+                            align: 'center'
+
+                        }
+                    ]
+                });
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

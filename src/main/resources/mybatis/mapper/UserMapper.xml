@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.UserMapper">
+
+    <select id="getUser" resultType="com.qdu.tms.Bean.User">
+        SELECT * FROM USER
+        <where>
+            <if test="account!=null">
+                ACCOUNT = #{account}
+            </if>
+            <if test="password!=null">
+                and PASSWORD = #{password}
+            </if>
+            <if test="type!=null">
+                and TYPE = #{type}
+            </if>
+            <if test="rid!=null">
+                and RID = #{rid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getUsers" resultType="com.qdu.tms.Bean.User">
+        SELECT * FROM USER
+        <where>
+            <if test="account!=null">
+                ACCOUNT = #{account}
+            </if>
+            <if test="password!=null">
+                and PASSWORD = #{password}
+            </if>
+            <if test="type!=null">
+                and TYPE = #{type}
+            </if>
+            <if test="rid!=null">
+                and RID = #{rid}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="addUser">
+        INSERT INTO USER(ACCOUNT,PASSWORD,TYPE,RID)
+        VALUES(#{account},#{password},#{type},#{rid})
+    </insert>
+
+    <update id="updateUser">
+        UPDATE USER
+        <set>
+            <if test="account!=null">
+                ACCOUNT=#{account},
+            </if>
+            <if test="password!=null">
+                PASSWORD=#{password},
+            </if>
+            <if test="type!=null ">
+                TYPE=#{type},
+            </if>
+            <if test="rid!=null">
+                RID=#{rid},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <delete id="delUsers">
+        DELETE FROM USER
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

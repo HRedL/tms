@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.HomeworkQuestionMapper">
+
+    <resultMap id="myHomeworkQuestion" type="com.qdu.tms.Bean.HomeworkQuestion">
+        <id column="ID" property="id"></id>
+        <result column="HID" property="hid"></result>
+        <result column="QID" property="qid"></result>
+        <result column="TYPE" property="type"></result>
+        <result column="PATH" property="path"></result>
+   </resultMap>
+
+
+    <resultMap id="myHomeworkFileQuestion" type="com.qdu.tms.common.HomeworkFileQuestion">
+        <id column="ID" property="id"></id>
+        <association javaType="com.qdu.tms.Bean.Homework" select="com.qdu.tms.mapper.HomeworkMapper.getHomeworkById" column="HID" property="homework"/>
+        <association javaType="com.qdu.tms.Bean.FileQuestion" select="com.qdu.tms.mapper.FileQuestionMapper.getFileQuestionById" column="QID" property="fileQuestion"/>
+    </resultMap>
+
+
+
+
+    <insert id="addHomeworkSingleQuestion">
+        INSERT INTO HOMEWORK_QUESTION(HID,QID,TYPE)
+        VALUES(#{hid},#{qid},#{type})
+    </insert>
+
+
+    <insert id="addHomeworkFileQuestion">
+        INSERT INTO HOMEWORK_QUESTION(HID,QID,TYPE,PATH)
+        VALUES(#{hid},#{qid},#{type},#{path})
+    </insert>
+
+
+    <delete id="delHomeworkQuestion1">
+        DELETE FROM HOMEWORK_QUESTION
+        WHERE HID = #{hid} AND QID = #{qid} AND TYPE = #{type}
+
+    </delete>
+
+
+    <delete id="delHomeworkQuestionsByHid">
+        DELETE FROM HOMEWORK_QUESTION
+        WHERE HID=#{hid}
+
+    </delete>
+
+    <!--查询所有-->
+    <select id="getHomeworkQuestionById" resultMap="myHomeworkQuestion">
+        SELECT * FROM HOMEWORK_QUESTION
+        WHERE ID=#{id}
+    </select>
+
+
+    <select id="getHomeworkQuestion" resultMap="myHomeworkQuestion">
+        SELECT * FROM HOMEWORK_QUESTION
+        <where>
+            <if test="hid!=null">
+                HID = #{hid}
+            </if>
+            <if test="qid!=null">
+                and QID = #{qid}
+            </if>
+            <if test="type!=null">
+                and TYPE = #{type}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getHomeworkFileQuestionsByTid" resultMap="myHomeworkFileQuestion">
+        SELECT homework_question.id id, homework_question.qid qid,homework_question.hid hid
+        FROM filequestion,homework_question,course,homework
+        WHERE homework.id = homework_question.hid
+        AND filequestion.id = homework_question.qid
+        AND homework.cid = course.id
+        AND course.tid = #{tid} AND homework_question.type=2
+    </select>
+
+
+</mapper>

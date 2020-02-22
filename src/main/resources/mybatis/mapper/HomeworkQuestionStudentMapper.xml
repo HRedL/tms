@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.HomeworkQuestionStudentMapper">
+
+    <resultMap id="myHomeworkQuestionStudent" type="com.qdu.tms.Bean.HomeworkQuestionStudent">
+        <id column="ID" property="id"></id>
+        <result column="SCORE" property="score"></result>
+        <result column="ANSWER" property="answer"></result>
+        <result column="SID" property="sid"></result>
+        <association javaType="com.qdu.tms.Bean.HomeworkQuestion" select="com.qdu.tms.mapper.HomeworkQuestionMapper.getHomeworkQuestionById" column="HQID" property="homeworkQuestion"/>
+    </resultMap>
+
+
+    <insert id="addHomeworkQuestionStudents" parameterType="com.qdu.tms.Bean.HomeworkQuestionStudent">
+        INSERT iNTO HOMEWORK_QUESTION_STUDENT(SID,HQID,ANSWER)VALUES
+        <foreach collection="list" item="homeworkQuestionStudent" separator=",">
+            (#{homeworkQuestionStudent.sid},#{homeworkQuestionStudent.homeworkQuestion.id},#{homeworkQuestionStudent.answer})
+        </foreach>
+    </insert>
+
+    <insert id="addHomeworkQuestionStudent">
+        INSERT iNTO HOMEWORK_QUESTION_STUDENT(SID,HQID,ANSWER)VALUES
+            (#{sid},#{homeworkQuestion.id},#{answer})
+    </insert>
+
+
+    <update id="updateHomeworkQuestionStudents" parameterType="com.qdu.tms.Bean.HomeworkQuestionStudent">
+        UPDATE HOMEWORK_QUESTION_STUDENT
+        SET ANSWER = CASE ID
+        <foreach collection="list" item="homeworkQuestionStudent" index="index" open="" separator="" close="">
+            WHEN #{homeworkQuestionStudent.id} THEN #{homeworkQuestionStudent.answer}
+        </foreach>
+        END
+        WHERE
+        ID in
+        <foreach collection="list" item="homeworkQuestionStudent" index="index" open="(" separator="," close=")">
+            #{homeworkQuestionStudent.id}
+        </foreach>
+    </update>
+
+    <update id="updateScore" parameterType="com.qdu.tms.Bean.HomeworkQuestionStudent">
+        UPDATE HOMEWORK_QUESTION_STUDENT
+        SET SCORE = CASE ID
+        <foreach collection="list" item="homeworkQuestionStudent" index="index" open="" separator="" close="">
+            WHEN #{homeworkQuestionStudent.id} THEN #{homeworkQuestionStudent.score}
+        </foreach>
+        END
+        WHERE
+        ID in
+        <foreach collection="list" item="homeworkQuestionStudent" index="index" open="(" separator="," close=")">
+            #{homeworkQuestionStudent.id}
+        </foreach>
+    </update>
+
+
+    <update id="updateHomeworkQuestionStudent">
+      UPDATE HOMEWORK_QUESTION_STUDENT
+      SET SCORE = #{score}
+      WHERE ID=#{id}
+    </update>
+
+    <delete id="delHomeworkQuestionStudentsByHid">
+        DELETE FROM HOMEWORK_QUESTION_STUDENT
+        WHERE HQID IN(
+            SELECT ID
+            FROM HOMEWORK_QUESTION
+            WHERE HID=#{hid}
+        )
+    </delete>
+
+
+    <!--<select id="getQuestionByHQidAndSid" resultType="com.qdu.tms.Bean.HomeworkQuestionStudent">-->
+        <!--SELECT * FROM HOMEWORK_QUESTION_STUDENT-->
+        <!--WHERE sid=#{sid} AND hqid=#{hqid}-->
+    <!--</select>-->
+
+    <select id="getQuestionByHidAndSid" resultMap="myHomeworkQuestionStudent">
+        SELECT * FROM HOMEWORK_QUESTION_STUDENT,HOMEWORK_QUESTION
+        WHERE SID=#{sid} AND HOMEWORK_QUESTION.ID = HOMEWORK_QUESTION_STUDENT.HQID
+        AND HOMEWORK_QUESTION.HID=#{hid}
+
+    </select>
+
+    <select id="getSingleQuestionByHidAndSid" resultMap="myHomeworkQuestionStudent">
+        SELECT * FROM HOMEWORK_QUESTION_STUDENT,HOMEWORK_QUESTION
+        WHERE SID=#{sid} AND HOMEWORK_QUESTION.ID = HOMEWORK_QUESTION_STUDENT.HQID
+        AND HOMEWORK_QUESTION.HID=#{hid} AND HOMEWORK_QUESTION.TYPE=1
+    </select>
+
+
+
+
+
+    <select id="getHomeworkQuestionStudent" resultMap="myHomeworkQuestionStudent">
+        SELECT * FROM HOMEWORK_QUESTION_STUDENT
+        <where>
+            <if test="sid!=null">
+                SID = #{sid}
+            </if>
+            <if test="homeworkQuestion.id!=null">
+                and HQID = #{homeworkQuestion.id}
+            </if>
+            <if test="score!=null">
+                and SCORE = #{score}
+            </if>
+            <if test="answer!=null">
+                and ANSWER = #{answer}
+            </if>
+        </where>
+
+    </select>
+    <select id="getHomeworkQuestionStudents" resultMap="myHomeworkQuestionStudent">
+        SELECT * FROM HOMEWORK_QUESTION_STUDENT
+        <where>
+            <if test="sid!=null">
+                SID = #{sid}
+            </if>
+            <if test="homeworkQuestion.id!=null">
+                and HQID = #{homeworkQuestion.id}
+            </if>
+            <if test="score!=null">
+                and SCORE = #{score}
+            </if>
+            <if test="answer!=null">
+                and ANSWER = #{answer}
+            </if>
+        </where>
+
+    </select>
+    <select id="getHomeworkQuestionStudentsByTid" resultMap="myHomeworkQuestionStudent">
+        SELECT * FROM HOMEWORK_QUESTION_STUDENT
+        WHERE HQID IN (
+            SELECt ID FROM HOMEWORK_QUESTION
+            WHERE HID IN(
+                SELECT ID FROM HOMEWORK
+                WHERE CID IN(
+                    SELECT ID FROM COURSE
+                    WHERE TID=#{tid}
+                )
+            )
+        )
+    </select>
+    <select id="getHomeworkQuestionStudentById" resultMap="myHomeworkQuestionStudent">
+        SELECT * FROM HOMEWORK_QUESTION_STUDENT
+        WHERE id=#{id}
+    </select>
+
+    <!--<select id="getSingleQuestionByHidAndSid" resultMap="myQuestionStudent">-->
+        <!--SELECT * FROM QUESTION_STUDENT-->
+        <!--WHERE sid=#{sid} AND hid=#{hid} AND TYPE=1-->
+    <!--</select>-->
+
+    <!--<select id="getFileQuestionByHidAndQidAndSid" resultMap="myQuestionStudent">-->
+        <!--SELECT * FROM QUESTION_STUDENT-->
+        <!--WHERE hid=#{hid} AND qid=#{qid} AND SID=#{sid} AND TYPE=2-->
+    <!--</select>-->
+
+
+</mapper>

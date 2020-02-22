@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.SingleQuestionMapper">
+
+    <!-- private String cno;//课程号
+    private String courseName; //课程名
+    private String courseDetail; //课程详细信息
+    private String courseTnum; //课程总人数
+    private Teacher teacher; //授课教师
+-->
+    <resultMap id="mySingleQuestion" type="com.qdu.tms.Bean.SingleQuestion">
+        <id column="ID" property="id"></id>
+        <result column="QNO" property="qno"></result>
+        <result column="QUESTION" property="question"></result>
+        <result column="QUESTIONA" property="questionA"></result>
+        <result column="QUESTIONB" property="questionB"></result>
+        <result column="QUESTIONC" property="questionC"></result>
+        <result column="QUESTIOND" property="questionD"></result>
+        <result column="ANSWER" property="answer"></result>
+        <result column="SCORE" property="score"></result>
+        <association javaType="com.qdu.tms.Bean.Course" select="com.qdu.tms.mapper.CourseMapper.getCourseById" column="CID" property="course"/>
+    </resultMap>
+
+
+    <insert id="addSingleQuestion">
+        INSERT INTO singlequestion(QNO,QUESTION,QUESTIONA,QUESTIONB,QUESTIONC,QUESTIOND,ANSWER,SCORE,CID)
+        VALUES(#{qno},#{question},#{questionA},#{questionB},#{questionC},#{questionD},#{answer},#{score},#{course.id})
+    </insert>
+    <update id="updateSingleQuestion">
+        UPDATE SINGLEQUESTION
+        <set>
+            <if test="qno!=null">
+                QNO=#{qno},
+            </if>
+            <if test="question!=null">
+                QUESTION=#{question},
+            </if>
+            <if test="questionA!=null ">
+                QUESTIONA=#{questionA},
+            </if>
+            <if test="questionB!=null">
+                QUESTIONB=#{questionB},
+            </if>
+            <if test="questionC!=null">
+                QUESTIONC=#{questionC},
+            </if>
+            <if test="questionD!=null">
+                QUESTIOND=#{questionD},
+            </if>
+            <if test="answer!=null">
+                ANSWER=#{answer},
+            </if>
+            <if test="score!=null">
+                SCORE=#{score},
+            </if>
+        </set>
+        WHERE ID=#{id}
+    </update>
+    <delete id="delSingleQuestions">
+        DELETE FROM SINGLEQUESTION
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--根据id查询-->
+    <select id="getSingleQuestionsByHid" resultMap="mySingleQuestion">
+        SELECT * FROM singlequestion,homework_question
+            WHERE HOMEWORK_QUESTION.HID=#{hid} AND HOMEWORK_QUESTION.TYPE=1
+                AND HOMEWORK_QUESTION.QID=SINGLEQUESTION.ID
+    </select>
+
+
+    <select id="getSingleQuestionsByCid" resultMap="mySingleQuestion">
+        SELECT * FROM SINGLEQUESTION
+        WHERE CID=#{cid}
+    </select>
+
+
+    <select id="getSingleQuestion" resultMap="mySingleQuestion">
+        SELECT * FROM SINGLEQUESTION
+        WHERE QNO=#{qno}
+    </select>
+    <select id="getSingleQuestionById" resultMap="mySingleQuestion">
+        SELECT * FROM SINGLEQUESTION
+        WHERE ID = #{id}
+
+    </select>
+
+</mapper>

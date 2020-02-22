@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.CourseMapper">
+
+    <!-- private String cno;//课程号
+    private String courseName; //课程名
+    private String courseDetail; //课程详细信息
+    private String courseTnum; //课程总人数
+    private Teacher teacher; //授课教师
+-->
+    <resultMap id="myCourse" type="com.qdu.tms.Bean.Course">
+        <id column="ID" property="id"></id>
+        <result column="CNO" property="cno"></result>
+        <result column="NAME" property="name"></result>
+        <result column="DETAIL" property="detail"></result>
+        <result column="TNUM" property="tnum"></result>
+        <association javaType="com.qdu.tms.Bean.Teacher" select="com.qdu.tms.mapper.TeacherMapper.getTeacherById" column="TID" property="teacher"/>
+    </resultMap>
+    <insert id="addCourse">
+        INSERT INTO COURSE(CNO,NAME,DETAIL,TNUM,TID)
+        VALUES(#{cno},#{name},#{detail},#{tnum},#{teacher.id})
+
+    </insert>
+    <update id="updateCourse">
+        UPDATE COURSE
+        <set>
+            <if test="cno!=null">
+                CNO=#{cno},
+            </if>
+            <if test="name!=null">
+                NAME=#{name},
+            </if>
+            <if test="detail!=null">
+                DETAIL=#{detail},
+            </if>
+            <if test="tnum!=null">
+                TNUM=#{tnum},
+            </if>
+            <if test="teacher!=null and teacher.id!=null">
+                TID=#{teacher.id},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+    <delete id="delCourses">
+        DELETE FROM COURSE
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--根据id查询-->
+    <select id="getCourseById" resultMap="myCourse">
+        SELECT * FROM COURSE WHERE ID=#{id}
+    </select>
+
+
+    <!--查询所有-->
+    <select id="getAllCourses" resultMap="myCourse">
+        SELECT * FROM COURSE
+    </select>
+
+    <!--条件查询多个-->
+    <select id="getCourses" resultMap="myCourse">
+        SELECT * FROM COURSE
+        <where>
+            <if test="cno!=null">
+                CNO LIKE concat('%',#{cno},'%')
+            </if>
+            <if test="name!=null">
+                and NAME LIKE concat('%', #{name},'%')
+            </if>
+            <if test="detail!=null">
+                and DETAIL LIKE concat('%',#{detail},'%')
+            </if>
+            <if test="tnum!=null">
+                and TNUM LIKE concat('%',#{tnum},'%')
+            </if>
+            <if test="teacher!=null and teacher.id !=null">
+                and TID LIKE concat('%',#{teacher.id},'%')
+            </if>
+        </where>
+    </select>
+
+    <!--条件查询单个-->
+    <select id="getCourse" resultMap="myCourse">
+        SELECT * FROM COURSE
+        <where>
+            <if test="cno!=null">
+                CNO = #{cno}
+            </if>
+            <if test="name!=null">
+                and NAME = #{name}
+            </if>
+            <if test="detail!=null">
+                and DETAIL = #{detail}
+            </if>
+            <if test="tnum!=null">
+                and TNUM = #{tnum}
+            </if>
+            <if test="teacher!=null">
+                and TID = #{teacher.id}
+            </if>
+        </where>
+    </select>
+
+    <select id="getCoursesByTid" resultMap="myCourse">
+        SELECT * FROM COURSE
+        WHERE TID = #{tid}
+    </select>
+
+    <select id="criteriaGetCoursesByTid" resultMap="myCourse">
+        SELECT * FROM COURSE
+        <where>
+            TID = #{tid}
+            <if test="course!=null and course.cno!=null">
+                and CNO LIKE concat('%',#{course.cno},'%')
+            </if>
+            <if test="course!=null and course.name!=null">
+                and NAME LIKE concat('%', #{course.name},'%')
+            </if>
+            <if test="course!=null and course.detail!=null">
+                and DETAIL LIKE concat('%',#{course.detail},'%')
+            </if>
+            <if test="course!=null and course.tnum!=null">
+                and TNUM LIKE concat('%',#{course.tnum},'%')
+            </if>
+        </where>
+    </select>
+    <select id="getCourseByCno" resultMap="myCourse">
+        SELECT * FROM COURSE
+        WHERE CNO=#{cno}
+    </select>
+
+
+</mapper>

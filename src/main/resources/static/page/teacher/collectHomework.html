@@ -1,0 +1,252 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
+    <title></title>
+    <link href="js/bstable/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="js/bstable/css/bootstrap-table.css" rel="stylesheet" type="text/css">
+    <link href="css/table.css" rel="stylesheet" type="text/css">
+</head>
+<body style="background-color: #ecf0f5;font-family: 微软雅黑;color: #475059;min-width: 1000px;overflow: auto">
+<div class="notice_main">
+    <h6>我的课程</h6>
+
+
+    <div class="notice_check">
+        <div class="btn-group l_left" style="margin-right: 4px">
+            <button type="button" class="btn btn-default change" style="height: 30px;line-height: 30px;padding: 0 12px !important;font-size: 12px">选择条件</button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height: 30px;line-height: 30px">
+                <span class="caret"></span>
+                <span class="sr-only"></span>
+            </button>
+            <!--<select>-->
+
+                <!--<option>课程号</option>-->
+                <!--<option>课程名</option>-->
+                <!--<option>课程描述</option>-->
+                <!--<option>课程描述</option>-->
+            <!--</select>-->
+            <ul class="dropdown-menu">
+                <li class="cno">课程号</li>
+                <li class="name">课程名</li>
+                <li class="detail">课程描述</li>
+            </ul>
+        </div>
+        <div class="l_left">
+            <input id="criteria_text" type="text" class="find_input">
+            <input id="criteria_type" type="hidden" value="">
+        </div>
+        <button id="query_btn" class="check_btn">查询</button>
+</div>
+    <table id="table" class="table_style" style="margin: 0 auto" > </table>
+</div>
+<script src="js/jquery/jQuery-2.2.0.min.js"></script>
+<script src="js/bstable/js/bootstrap.min.js"></script>
+<script src="js/bstable/js/bootstrap-table.js"></script>
+<script src="js/bstable/js/bootstrap-table-zh-CN.min.js"></script>
+<script src="js/layer_v2.1/layer/layer.js"></script>
+<script type="text/javascript">
+
+
+    //获取项目根路径
+    function getRootPath(){
+        var curWwwPath=window.document.location.href;
+        var pathName=window.document.location.pathname;
+        var pos=curWwwPath.indexOf(pathName);
+        var localhostPaht=curWwwPath.substring(0,pos);
+        var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+        return(localhostPaht+projectName);
+    }
+
+    function pageQuery(){
+
+        data={
+            "tid":sessionStorage.getItem("user_id")
+        };
+        $.ajax({
+            url: getRootPath() + "/homeworkQuestion/getFileQuestionsByTid",
+            type: "get",
+            data: data,
+            success: function (result) {
+                var jsonData=[];
+                var homeworkFileQuestions = result.body.homeworkFileQuestions;
+                $.each(homeworkFileQuestions,function (i,homeworkFileQuestion) {
+                    var data={};
+                    data["hno"]=homeworkFileQuestion.homework.hno;
+                    data["fno"]=homeworkFileQuestion.fileQuestion.fno;
+                    data["question"]=homeworkFileQuestion.fileQuestion.question;
+                    // data[""]=course.tnum;
+                    // data["teacher_name"]=course.teacher.name;
+                    data["oper1"]='<a href="'+getRootPath()+'/fileQuestion/downloadFileQuestions?hqid='+homeworkFileQuestion.id+'">下载作业</a>';
+                    jsonData.push(data);
+                });
+                //var json= JSON.stringify(jsonData);
+                $('#table').bootstrapTable({
+                    method: "get",
+                    striped: true,
+                    singleSelect: false,
+                    data:jsonData,
+                    dataType: "json",
+                    pagination: true, //分页
+                    pageSize: 10,
+                    pageNumber: 1,
+                    search: false, //显示搜索框
+                    contentType: "application/x-www-form-urlencoded",
+                    queryParams:null,
+                    columns: [
+                        {
+                            title: "作业号",
+                            field: 'hno',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title: '试题号',
+                            field: 'fno',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title: '问题',
+                            field: 'question',
+                            align: 'center',
+                            valign: 'middle',
+                           // width:300,
+                            cellStyle:formatTableUnit,
+                            formatter:paramsMatter
+                        },
+                        {
+                            title: '操作',
+                            field: 'oper1',
+                            align: 'center'
+                        }
+                    ]
+                });
+            }
+        });
+    }
+
+    function paramsMatter(value,row,index) {
+        var span=document.createElement('span');
+        span.setAttribute('title',value);
+        span.innerHTML = value;
+        return span.outerHTML;
+    }
+
+    function formatTableUnit(value, row, index) {
+        return {
+            css: {
+                "white-space": 'nowrap',
+                "text-overflow": 'ellipsis',
+                "overflow": 'hidden'
+            }
+        }
+    }
+
+
+    $(function () {
+        change();
+        pageQuery();
+    });
+
+
+    function change(){
+        $(".dropdown-menu>li").click(function(){
+            $(".change").html($(this).html())
+        })
+    }
+
+    //下拉列表点击
+    $('li').click(function(){
+        var criteria_type =  $(this).attr("class");
+        $("#criteria_type").val(criteria_type);
+    });
+
+    function downloadHomework(hqid){
+
+    }
+
+    // //查询按钮点击
+    // $('#query_btn').click(function () {
+    //     var criteria_type = $("#criteria_type").val();
+    //     var criteria_text = $("#criteria_text").val();
+    //     var data = {};
+    //     data[criteria_type] = criteria_text;
+    //     data["tid"]=sessionStorage.getItem("user_id");
+    //     $.ajax({
+    //         url: getRootPath() + "/criteriaGetCoursesByTid",
+    //         type: "get",
+    //         data: data,
+    //         success: function (result) {
+    //             var jsonData=[];
+    //             var courses = result.body.courses;
+    //             $.each(courses,function (i,course) {
+    //                 var data={};
+    //                 data["cno"]=course.cno;
+    //                 data["name"]=course.name;
+    //                 data["detail"]=course.detail;
+    //                 data["tnum"]=course.tnum;
+    //                 data["teacher_name"]=course.teacher.name;
+    //                 data["result"]="<a href='"+course.id+"'>布置作业</a>";
+    //                 jsonData.push(data);
+    //             });
+    //             //先销毁再创建
+    //             $('#table').bootstrapTable('destroy').bootstrapTable({
+    //                 method: "get",
+    //                 striped: true,
+    //                 singleSelect: false,
+    //                 data:jsonData,
+    //                 dataType: "json",
+    //                 pagination: true, //分页
+    //                 pageSize: 10,
+    //                 pageNumber: 1,
+    //                 search: false, //显示搜索框
+    //                 contentType: "application/x-www-form-urlencoded",
+    //                 queryParams:null,
+    //                 columns: [
+    //                     {
+    //                         title: "课程编号",
+    //                         field: 'cno',
+    //                         align: 'center',
+    //                         valign: 'middle'
+    //                     },
+    //                     {
+    //                         title: '课程名称',
+    //                         field: 'name',
+    //                         align: 'center',
+    //                         valign: 'middle'
+    //                     },
+    //                     {
+    //                         title: '详细信息',
+    //                         field: 'detail',
+    //                         align: 'center',
+    //                         valign: 'middle'
+    //                     },
+    //                     {
+    //                         title: '课程人数',
+    //                         field: 'tnum',
+    //                         align: 'center'
+    //                     }
+    //                     ,
+    //                     {
+    //                         title: '教师姓名',
+    //                         field: 'teacher_name',
+    //                         align: 'center'
+    //                     } ,
+    //                     {
+    //                         title: '操作',
+    //                         field: 'result',
+    //                         align: 'center'
+    //                     }
+    //                 ]
+    //             });
+    //         }
+    //     });
+    //
+    // });
+
+
+</script>
+
+</body>
+</html>

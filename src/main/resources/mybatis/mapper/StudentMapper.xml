@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.StudentMapper">
+
+
+    <select id="getStudents" resultType="com.qdu.tms.Bean.Student">
+        SELECT * FROM STUDENT
+        <where>
+            <if test="sno!=null">
+                SNO like concat('%',#{sno},'%')
+            </if>
+            <if test="name!=null">
+                and NAME like concat('%',#{name},'%')
+            </if>
+            <if test="sex!=null">
+                and SEX like concat('%',#{sex},'%')
+            </if>
+            <if test="phone!=null">
+                and PHONE like concat('%',#{phone},'%')
+            </if>
+            <if test="email!=null">
+                and EMAIL like concat('%',#{email},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getStudent" resultType="com.qdu.tms.Bean.Student">
+        SELECT * FROM STUDENT
+        <where>
+            <if test="sno!=null">
+                SNO like concat('%',#{sno},',%')
+            </if>
+            <if test="name!=null">
+                and NAME like concat('%',#{name},',%')
+            </if>
+            <if test="sex!=null">
+                and SEX like concat('%',#{sex},',%')
+            </if>
+            <if test="phone!=null">
+                and PHONE like concat('%',#{phone},',%')
+            </if>
+            <if test="email!=null">
+                and EMAIL like concat('%',#{email},',%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getStudentBySno" resultType="com.qdu.tms.Bean.Student">
+          SELECT *
+          FROM STUDENT
+          WHERE SNO=#{sno}
+    </select>
+
+    <insert id="addStudent">
+        INSERT INTO STUDENT(SNO,NAME,SEX,DEPT,PHONE,EMAIl)
+        VALUES(#{sno},#{name},#{sex},#{dept},#{phone},#{email})
+    </insert>
+
+    <update id="updateStudent">
+        UPDATE STUDENT
+        <set>
+            <if test="sno!=null">
+                SNO=#{sno},
+            </if>
+            <if test="name!=null">
+                NAME=#{name},
+            </if>
+            <if test="sex!=null ">
+                SEX=#{sex},
+            </if>
+            <if test="dept!=null">
+                DEPT=#{dept},
+            </if>
+            <if test="phone!=null">
+                PHONE=#{phone},
+            </if>
+            <if test="email!=null">
+                EMAIL=#{email},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <delete id="delStudents">
+        DELETE FROM STUDENT
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

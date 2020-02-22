@@ -1,0 +1,401 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
+    <title></title>
+    <link href="js/bstable/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="js/bstable/css/bootstrap-table.css" rel="stylesheet" type="text/css">
+    <link href="css/table.css" rel="stylesheet" type="text/css" />
+    <link href="css/news.css" rel="stylesheet" type="text/css" />
+</head>
+<!--<style>-->
+    <!--.table tbody tr td{-->
+
+        <!--overflow: hidden;-->
+
+        <!--text-overflow:ellipsis;-->
+
+        <!--white-space: nowrap;-->
+
+    <!--}-->
+<!--</style>-->
+<body style="background-color: #ecf0f5;font-family: 微软雅黑;color: #475059;min-width: 1000px;overflow: auto">
+<div class="news_main">
+    <div class="l_left news_left">
+        <h6>单选题题库</h6>
+        <ul class="log_nav" id="lessons">
+            <!--<li id="unfinished" class="log_active">已收齐</li>-->
+            <!--<li id="finishing">未收齐</li>-->
+            <!--<li id="finished"></li>-->
+        </ul>
+    </div>
+    <div class="l_left news_right">
+        <h6>作业管理</h6>
+
+        <div class="notice_check">
+            <!--<div class="btn-group l_left" style="margin-right: 4px">-->
+                <!--<button type="button" class="btn btn-default change" style="height: 30px;line-height: 30px;padding: 0 12px !important;font-size: 12px">选择条件</button>-->
+                <!--<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height: 30px;line-height: 30px">-->
+                    <!--<span class="caret"></span>-->
+                    <!--<span class="sr-only"></span>-->
+                <!--</button>-->
+
+                <!--<ul class="dropdown-menu">-->
+                    <!--<li class="student">学生</li>-->
+                    <!--<li class="teacher">教师</li>-->
+                    <!--<li class="manager">管理员</li>-->
+                <!--</ul>-->
+            <!--</div>-->
+            <!--<div class="l_left">-->
+                <!--<input id="criteria_type" type="hidden" value="">-->
+                <input id="cid" type="hidden">
+            <!--</div>-->
+            <!--<button id="query_btn" class="check_btn">查询</button>-->
+
+            <div class="notice_nav r_right">
+                <a class="btn btn-default" onclick="addUser()"><span class="glyphicon glyphicon-plus"></span>新增</a>
+                <a class="btn btn-default" onclick="delUser()"><span class="glyphicon glyphicon-remove"></span>删除</a>
+            </div>
+        </div>
+
+
+        <br/>
+
+        <div>
+            <table id="table" class="table table-bordered" style='table-layout:fixed;'></table>
+
+        </div>
+    </div>
+
+    <div class="clear"></div>
+
+</div>
+<script src="js/jquery/jQuery-2.2.0.min.js"></script>
+<script src="js/bstable/js/bootstrap.min.js"></script>
+<script src="js/bstable/js/bootstrap-table.js"></script>
+<script src="js/bstable/js/bootstrap-table-zh-CN.min.js"></script>
+<script src="js/layer_v2.1/layer/layer.js"></script>
+<script>
+    $(function(){
+        setLessonsByTid();
+        change();
+
+    });
+    function change(){
+        $(".dropdown-menu>li").click(function(){
+            $(".change").html($(this).html())
+        })
+    }
+
+    //下拉列表点击
+    $('li').click(function(){
+        var criteria_type =  $(this).attr("class");
+        $("#criteria_type").val(criteria_type);
+    });
+
+    function nav(){
+        $(".log_nav li").each(function(index){
+            $(this).click(function(){
+                $(".log_nav li").removeClass("log_active");
+                $(this).addClass("log_active");
+                $(".news_table>li").eq(index).show().siblings("li").stop().hide();
+                // li_click($(this).attr("id"));
+            })
+
+        })
+    }
+
+    function setLessonsByTid(){
+        var tid = sessionStorage.getItem("user_id");
+        var lessons_page = "";
+        $.ajax({
+            url: getRootPath() + "/course/getCoursesByTid",
+            type: "get",
+            data: {
+                "tid":tid
+            },
+            success: function (result) {
+                var courses = result.body.courses;
+                $.each(courses,function (i,course) {
+                    if(i===0){
+                        lessons_page+='<li class="log_active" onclick="li_click('+course.id+')">'+course.name+'</li>'
+                        li_click(course.id);
+                    }else{
+                        lessons_page+='<li onclick="li_click('+course.id+')">'+course.name+'</li>'
+                    }
+
+                });
+                $("#lessons").html(lessons_page);
+                nav();
+
+            }
+        });
+
+    }
+
+
+    function getRootPath(){
+        var curWwwPath=window.document.location.href;
+        var pathName=window.document.location.pathname;
+        var pos=curWwwPath.indexOf(pathName);
+        var localhostPaht=curWwwPath.substring(0,pos);
+        var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+        return(localhostPaht+projectName);
+    }
+
+
+    function li_click( cid){
+        var data={};
+        data["cid"] = cid;
+
+        $("#cid").val(cid);
+
+        $.ajax({
+            url: getRootPath() + "/fileQuestion/getFileQuestionsByCid",
+            type: "get",
+            data: data,
+            success: function (result) {
+                var jsonData=[];
+                var fileQuestions = result.body.fileQuestions;
+                $.each(fileQuestions,function (i,fileQuestion) {
+                    var data={};
+                    data["fid"]=fileQuestion.id;
+                    data["fno"]=fileQuestion.fno;
+                    data["question"]=fileQuestion.question;
+
+                    if(fileQuestion.detail!=null){
+                        data["detail"]='<a href="'+getRootPath()+'/fileQuestion/downloadDetail?id='+fileQuestion.id+'">'+fileQuestion.detail+'</a>';
+                    }else{
+                        data["detail"]="无附件"
+                    }
+
+                    if(fileQuestion.answer!=null){
+                        data["answer"]='<a href="'+getRootPath()+'/fileQuestion/downloadAnswer?id='+fileQuestion.id+'">'+fileQuestion.answer+'</a>';
+                    }else{
+                        data["answer"]="暂无参考"
+                    }
+
+                    data["score"]=fileQuestion.score;
+                    data["oper1"]='<a class="btn btn-default btn-xs" onclick="updateUser('+fileQuestion.id+')"><span class="glyphicon glyphicon-pencil"></span>编辑</a>';
+                    data["oper2"]='<a class="btn btn-default btn-xs" onclick="uploadAnswer('+fileQuestion.id+')"><span class="glyphicon glyphicon-pencil"></span>添加答案</a>';
+                    data["oper3"]='<a class="btn btn-default btn-xs" onclick="uploadDetail('+fileQuestion.id+')"><span class="glyphicon glyphicon-pencil"></span>添加附件</a>';
+                    jsonData.push(data);
+                });
+
+                $("#table").bootstrapTable('destroy').bootstrapTable({
+                  //  method: "get",
+                    striped: true,
+                    singleSelect: false,
+                    data: jsonData,
+                    // url: "json/log.json",
+                    dataType: "json",
+                    pagination: true, //分页
+                    pageSize: 9,
+                    pageNumber: 1,
+                    showColumns: false,
+                    search: false, //显示搜索框
+                    contentType: "application/x-www-form-urlencoded",
+                    queryParams: null,
+                    columns: [
+                        {
+                            checkbox: "true",
+                            field: 'check',
+                            align: 'center',
+                            valign: 'middle'
+                        },
+                        {
+                            title:"ID",
+                            field: 'id',
+                            visible:false
+                        },
+                        {
+                            title: "试题号",
+                            field: 'fno',
+                            align: 'center',
+                            valign: 'middle'
+                            //width:'8%'
+                        },
+                        {
+                            title: '问题',
+                            field: 'question',
+                            align: 'center',
+                           // width:'42%',
+            //                width:200,
+                            cellStyle:formatTableUnit,
+                            formatter:paramsMatter
+                        },
+                        {   title: '附件',
+                            field: 'detail',
+                            align: 'center'
+                        },
+                        {   title: '答案',
+                            field: 'answer',
+                            align: 'center'
+                        },
+                        {
+                            title: '分值',
+                            field: 'score',
+                            align: 'center'
+                            //width:'5%'
+                        },
+                        {
+                            title: '操作1',
+                            field: 'oper1',
+                            align: 'center'
+                        },
+                        {
+                            title: '操作2',
+                            field: 'oper2',
+                            align: 'center'
+                        },
+                        {
+                            title: '操作3',
+                            field: 'oper3',
+                            align: 'center'
+                        }
+                    ]
+                });
+            }
+        });
+    }
+
+    function paramsMatter(value,row,index) {
+        var span=document.createElement('span');
+        span.setAttribute('title',value);
+        span.innerHTML = value;
+        return span.outerHTML;
+    }
+
+    function formatTableUnit(value, row, index) {
+        return {
+            css: {
+                "white-space": 'nowrap',
+                "text-overflow": 'ellipsis',
+                "overflow": 'hidden'
+            }
+        }
+    }
+
+    function addUser(){
+
+        var cid = $("#cid").val();
+
+        layer.open({
+            type: 2,
+            title: '添加详情',
+            shadeClose: true,
+            shade: 0.5,
+            skin: 'layui-layer-rim',
+            closeBtn:1,
+            area: ['600px', '350px'],
+            content: 'addFileQuestion.html?cid='+cid,
+            end:function(){
+                // window.location.reload();
+                var cid = $("#cid").val();
+                li_click(cid)
+            }
+        });
+    }
+
+    function updateUser(id){
+        layer.open({
+            type: 2,
+            title: '添加详情',
+            shadeClose: true,
+            shade: 0.5,
+            skin: 'layui-layer-rim',
+            closeBtn:1,
+            area: ['600px', '300px'],
+            content: 'updateFileQuestion.html?id='+id,
+            end:function(){
+                // window.location.reload();
+                var cid = $("#cid").val();
+                li_click(cid)
+            }
+        });
+    }
+
+
+    function uploadAnswer(id){
+
+        layer.open({
+            type: 2,
+            title: '上传文件',
+            shadeClose: true,
+            shade: 0.5,
+            skin: 'layui-layer-rim',
+            closeBtn:1,
+            area: ['700px', '420px'],
+            content: 'plupload-master/examples/jquery/uploadAnswer.html?id='+id,
+            end:function(){
+                var cid = $("#cid").val();
+                li_click(cid)
+            }
+        });
+}
+    function uploadDetail(id){
+        layer.open({
+            type: 2,
+            title: '上传文件',
+            shadeClose: true,
+            shade: 0.5,
+            skin: 'layui-layer-rim',
+            closeBtn:1,
+            area: ['700px', '420px'],
+            content: 'plupload-master/examples/jquery/uploadDetail.html?id='+id,
+            end:function(){
+                var cid = $("#cid").val();
+                li_click(cid)
+            }
+        });
+    }
+
+
+
+
+
+    function delUser() {
+        var rows=$("#table").bootstrapTable('getSelections');
+        var items = [];
+        $.each(rows, function (index, row) {
+            items.push(row.id);
+        });
+
+        var number = items.length;
+
+        if (number === 0) {
+            layer.msg('请选择删除的用户信息', {period: 3000, icon: 1, shift: 6});
+        } else {
+            layer.confirm("删除已选择的用户信息,是否继续", {icon: 3, title: "提示"}, function (cindex) {
+                $.ajax({
+                    url: getRootPath()+"/fileQuestion/delFileQuestions",
+                    type: "delete",
+                    data: {
+                        ids: items
+                    },
+                    success: function (result) {
+                        if(result.success){
+
+                            layer.msg(result.msg,{time:1000,icon:1,shift:6});
+                        }else{
+                            layer.msg(result.msg,{time:1000,icon:2,shift:6});
+                        }
+                        layer.close(cindex);
+
+                        setTimeout(function(){  //使用  setTimeout（）方法设定定时1000毫秒
+                            // window.location.reload();//页面刷新
+                            var cid = $("#cid").val();
+                            li_click(cid)
+                        },1000);
+                    }
+                });
+
+            });
+        }
+    }
+
+
+</script>
+</body>
+</html>

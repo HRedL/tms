@@ -1,0 +1,363 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>在线作业</title>
+	<link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="main.css" rel="stylesheet" type="text/css" />
+
+<link href="test.css" rel="stylesheet" type="text/css" />
+
+<style>
+.hasBeenAnswer {
+	background: #5d9cec;
+	color:#fff;
+}
+
+</style>
+</head>
+
+<body>
+	<div class="main">
+		<!--nr start-->
+		<div class="test_main">
+			<div class="nr_left">
+				<div class="test">
+					<form onsubmit="return false;">
+						<div id="question_content">
+
+
+						</div>
+					</form>
+				</div>
+
+			</div>
+			<!--<div class="nr_right">-->
+				<!--<div class="nr_rt_main">-->
+					<!--<div class="rt_nr1" id="card_content">-->
+						<!---->
+					<!--</div>-->
+
+				<!--</div>-->
+			<!--</div>-->
+		</div>
+		<!--nr end-->
+		<div class="foot">
+			<!--<a class="btn btn-primary btn-lg btn-block" onclick="addHomeworkQuestion()"><span class="glyphicon glyphicon-plus"></span>完成</a>;-->
+		</div>
+	</div>
+
+<script src="jquery-1.11.3.min.js"></script>
+<script src="jquery.easy-pie-chart.js"></script>
+
+<script src="../js/layer_v2.1/layer/layer.js"></script>
+<!--时间js-->
+<script src="time/jquery.countdown.js"></script>
+<script>
+
+        function getRootPath(){
+            var curWwwPath=window.document.location.href;
+            var pathName=window.document.location.pathname;
+            var pos=curWwwPath.indexOf(pathName);
+            var localhostPaht=curWwwPath.substring(0,pos);
+            var projectName=pathName.substring(0,pathName.substr(1).indexOf('/')+1);
+            return(localhostPaht+projectName);
+        }
+		
+		$(function() {
+            initPage();
+          //  initPage1();
+
+		});
+
+
+		function initPage(){
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            var question_content='';
+
+            $.ajax({
+                url: getRootPath() + "/singleQuestion/getSingleQuestionsByHid",
+                type: "get",
+                data: {
+                    "hid":hid
+				},
+                success: function (result) {
+
+                    if(result.body.singleQuestions!=null){
+                        var singleQuestions=result.body.singleQuestions;
+
+                        var singleQuestionPage="";
+                        var totalGrade=0;
+                        var count=0;
+
+                        $.each(singleQuestions,function (i,singleQuestion) {
+                            count++;
+                            totalGrade+=singleQuestion.score;
+                            var index=i+1;
+                            //拼接单选题题目
+                            singleQuestionPage+='<li id="qu_0_'+index+'"><a onclick="delHomeworkQuestion('+hid+','+singleQuestion.id+',1)" style="float:right; margin-right: 20px" class="glyphicon glyphicon-remove"></a>';
+                            singleQuestionPage+='<input type="hidden" value="'+singleQuestion.id+'" id="qu_0_'+index+'_id"/>';
+                            singleQuestionPage+='<div class="test_content_nr_tt">';
+                            singleQuestionPage+='<i>'+index+'</i><span>('+singleQuestion.score+'分)</span><span>'+singleQuestion.question+'</span>';
+                            singleQuestionPage+='</div>';
+
+                            singleQuestionPage+='<div class="test_content_nr_main"><ul>';
+
+                            if(singleQuestion.questionA!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='A.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionA+'</p>';
+                                singleQuestionPage+='</li>';
+                            }
+
+                            if(singleQuestion.questionB!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='B.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionB+'</p>';
+                                singleQuestionPage+='</li>';
+                            }
+                            if(singleQuestion.questionC!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='C.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionC+'</p>';
+                                singleQuestionPage+='</li>';
+                            }
+                            if(singleQuestion.questionD!=null){
+                                singleQuestionPage+='<li class="option">';
+                                singleQuestionPage+='D.';
+                                singleQuestionPage+='<p class="ue" style="display: inline;">'+singleQuestion.questionD+'</p>';
+                                singleQuestionPage+='</li>';
+
+                            }
+
+                            singleQuestionPage+='<li class="option" style="color: red; font-weight: bold">';
+                            singleQuestionPage+='正确答案:';
+                            singleQuestionPage+='<span id="trueAnswer_'+index+'">'+singleQuestion.answer+'</span>';
+                            singleQuestionPage+='</li>';
+                            singleQuestionPage+='</ul></div></li>';
+
+                        });
+
+                        question_content+='<div class="test_content">';
+                        question_content+='<div class="test_content_title">';
+                        question_content+='<h2>单选题</h2>';
+                        question_content+='<p>';
+                        question_content+='共'+count+'题，合计'+totalGrade+'分';
+                        question_content+='</p>';
+                        question_content+='</div>';
+                        question_content+='</div>';
+                        question_content+='<div class="test_content_nr">';
+                        question_content+='<ul id="singleQuesiton">';
+                        question_content+=singleQuestionPage;
+                        question_content+='</ul>';
+                        question_content+='</div>';
+
+                        question_content+='<a class="btn btn-default btn-lg btn-block" onclick="addHomeworkSingleQuestion()"><span class="glyphicon glyphicon-plus"></span>增加单选题</a>';
+                    }
+                    $.ajax({
+                        url: getRootPath() + "/fileQuestion/getFileQuestionsByHid",
+                        type: "get",
+                        data: {
+                            "hid":hid
+                        },
+                        success: function (result) {
+
+                            //var question_content=$("#question_content").html();
+
+
+                            if(result.body.fileQuestions!=null){
+                                var fileQuestions = result.body.fileQuestions;
+
+                                // if(endTime==null){
+                                //     endTime=fileQuestions[0].homework.endTime;
+                                // }
+
+                                var fileQuestionPage="";
+                                //var fileQuestionCard="";
+
+                                var totalGrade=0;
+                                var count=0;
+
+                                $.each(fileQuestions,function (i,fileQuestion) {
+                                    count++;
+                                    totalGrade+=fileQuestion.score;
+                                    var index=i+1;
+                                    //拼接单选题题目
+                                    fileQuestionPage+='<li id="qu_1_'+index+'"><a onclick="delHomeworkQuestion('+hid+','+fileQuestion.id+',2)" style="float:right; margin-right: 20px" class="glyphicon glyphicon-remove"></a>';
+                                    fileQuestionPage+='<input type="hidden" value="'+fileQuestion.id+'" id="qu_1_'+index+'_id"/>';
+                                    fileQuestionPage+='<div class="test_content_nr_tt">';
+                                    fileQuestionPage+='<i>'+index+'</i><span>('+fileQuestion.score+'分)</span><span>'+fileQuestion.question+'</span>';
+                                    fileQuestionPage+='<br>';
+                                    fileQuestionPage+='<a href="#">附件下载</a>';
+                                    // fileQuestionPage+='<b class="icon iconfont">&#xe881;</b>';
+                                    fileQuestionPage+='</div>';
+                                    //拼接单选题卡片
+                                    //  fileQuestionCard+='<li><a href="#qu_1_'+index+'">'+index+'</a></li>';
+                                    //拼接单选题选项
+                                    // fileQuestionPage+='<div class="test_content_nr_main"><ul>';
+                                    // fileQuestionPage+='<br>';
+                                    // fileQuestionPage+='<a  onclick="addRole()" href="#">文件上传</a>';
+                                    // fileQuestionPage+='</ul></div>';
+
+                                    fileQuestionPage+='</li>';
+                                });
+
+                                question_content+='<div class="test_content">';
+                                question_content+='<div class="test_content_title">';
+                                question_content+='<h2>文件上传题</h2>';
+                                question_content+='<p>';
+                                question_content+='共'+count+'题，合计'+totalGrade+'分';
+                                question_content+='</p>';
+                                question_content+='</div>';
+                                question_content+='</div>';
+                                question_content+='<div class="test_content_nr">';
+                                question_content+='<ul id="fileQuesiton">';
+                                question_content+=fileQuestionPage;
+                                question_content+='</ul>';
+                                question_content+='</div>';
+
+
+                                question_content+='<a class="btn btn-default btn-lg btn-block" onclick="addHomeworkFileQuestion()"><span class="glyphicon glyphicon-plus"></span>增加文件上传题</a>';
+
+                            }
+                            $("#question_content").html(question_content);
+                        }
+                    });
+                }
+            });
+		}
+
+        function initPage1(){
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+        }
+
+
+        function addHomeworkSingleQuestion(){
+
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            layer.open({
+                type: 2,
+                title: '添加详情',
+                shadeClose: true,
+                shade: 0.5,
+                skin: 'layui-layer-rim',
+                closeBtn:1,
+                area: ['600px', '350px'],
+                content: '../addHomeworkSingleQuestion.html?hid='+hid,
+                end:function(){
+					initPage();
+                }
+            });
+        }
+
+
+
+        function addHomeworkFileQuestion() {
+            var test =window.location.href;
+            var hid=test.split("?hid=")[1];
+
+            layer.open({
+                type: 2,
+                title: '添加详情',
+                shadeClose: true,
+                shade: 0.5,
+                skin: 'layui-layer-rim',
+                closeBtn:1,
+                area: ['600px', '350px'],
+                content: '../addHomeworkFileQuestion.html?hid='+hid,
+                end:function(){
+                    initPage();
+                }
+            });
+        }
+
+
+        function delHomeworkQuestion(hid,qid,type) {
+            // var rows=$("#table").bootstrapTable('getSelections');
+            // var items = [];
+            // $.each(rows, function (index, row) {
+            //     items.push(row.id);
+            // });
+            //
+            // var number = items.length;
+
+            // if (number === 0) {
+            //     layer.msg('请选择删除的用户信息', {period: 3000, icon: 1, shift: 6});
+            // } else {
+            layer.confirm("删除已选择题目,是否继续", {icon: 3, title: "提示"}, function (cindex) {
+                $.ajax({
+                    url: getRootPath()+"/homeworkQuestion/delHomeworkQuestion",
+                    type: "delete",
+                    data: {
+                        "hid":hid,
+                        "qid":qid,
+                        "type":type
+                    },
+                    success: function (result) {
+                        if(result.success){
+
+                            layer.msg(result.msg,{time:1000,icon:1,shift:6});
+                        }else{
+                            layer.msg(result.msg,{time:1000,icon:2,shift:6});
+                        }
+                        layer.close(cindex);
+
+                        setTimeout(function(){  //使用  setTimeout（）方法设定定时1000毫秒
+                            initPage();//页面刷新
+
+                        },500);
+                    }
+                });
+
+            });
+          //  }
+        }
+
+        // function addHomeworkQuestion(){
+         //    layer.confirm("提交这些题目,是否继续", {icon: 3, title: "提示"}, function (cindex) {
+         //        $.ajax({
+         //            url: getRootPath()+"/homeworkQuestion/delHomeworkQuestion",
+         //            type: "delete",
+         //            data: {
+         //                "hid":hid,
+         //                "qid":qid,
+         //                "type":type
+         //            },
+         //            success: function (result) {
+         //                if(result.success){
+        //
+         //                    layer.msg(result.msg,{time:1000,icon:1,shift:6});
+         //                }else{
+         //                    layer.msg(result.msg,{time:1000,icon:2,shift:6});
+         //                }
+         //                layer.close(cindex);
+        //
+         //                setTimeout(function(){  //使用  setTimeout（）方法设定定时1000毫秒
+         //                    initPage();//页面刷新
+        //
+         //                },500);
+         //            }
+         //        });
+        //
+         //    });
+		// }
+
+
+
+
+	</script>
+
+
+</body>
+
+</html>

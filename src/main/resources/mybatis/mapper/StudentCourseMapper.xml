@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qdu.tms.mapper.StudentCourseMapper">
+
+
+    <resultMap id="myCourse" type="com.qdu.tms.Bean.Course">
+        <id column="ID" property="id"></id>
+        <result column="CNO" property="cno"></result>
+        <result column="NAME" property="name"></result>
+        <result column="DETAIL" property="detail"></result>
+        <result column="TNUM" property="tnum"></result>
+        <association javaType="com.qdu.tms.Bean.Teacher" select="com.qdu.tms.mapper.TeacherMapper.getTeacherById" column="TID" property="teacher"/>
+    </resultMap>
+
+    <!--
+     SELECT *
+        FROM COURSE
+        WHERE ID IN (
+            SELECT CID
+            FROM STUDENT_COURSE
+
+       )-->
+    <select id="getCoursesBySid" resultMap="myCourse">
+        SELECT *
+        FROM COURSE
+        WHERE ID IN (
+            SELECT CID
+            FROM STUDENT_COURSE
+            WHERE SID = #{sid}
+        )
+    </select>
+
+    <select id="criteriaGetCoursesBySid" resultMap="myCourse">
+        SELECT COURSE.id id ,CNO,NAME,DETAIL,TNUM,TID
+        FROM COURSE,STUDENT_COURSE
+        <where>
+            COURSE.ID = STUDENT_COURSE.CID
+            <if test="sid!=null">
+                AND SID=#{sid}
+            </if>
+            <if test="course!=null and course.cno!=null">
+                and CNO LIKE concat('%',#{course.cno},'%')
+            </if>
+            <if test="course!=null and course.name!=null">
+                and NAME LIKE concat('%', #{course.name},'%')
+            </if>
+            <if test="course!=null and course.detail!=null">
+                and DETAIL LIKE concat('%',#{course.detail},'%')
+            </if>
+            <if test="course!=null and course.tnum!=null">
+                and TNUM LIKE concat('%',#{course.tnum},'%')
+            </if>
+            <if test="course!=null and course.teacher!=null and course.teacher.id !=null">
+                and TID LIKE concat('%',#{course.teacher.id},'%')
+            </if>
+
+        </where>
+    </select>
+    <select id="getStudentsByCid" resultType="com.qdu.tms.Bean.Student">
+        SELECT *
+        FROM STUDENT
+        WHERE ID IN (
+            SELECT SID
+            FROM STUDENT_COURSE
+            WHERE CID = #{cid}
+        )
+
+    </select>
+</mapper>

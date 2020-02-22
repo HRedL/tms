@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>.ht</title>
+</head>
+<body>
+
+<!--单选题结构-->
+<li id="qu_0_0">
+    <div class="test_content_nr_tt">
+        <i>题号</i><span>(分值)</span><span>题目1</span><b class="icon iconfont">&#xe881;</b>
+    </div>
+
+    <div class="test_content_nr_main">
+        <ul>
+            <li class="option">
+                <input type="radio" class="radioOrCheck" name="answer1"
+                       id="0_answer_1_option_1"
+                />
+                <label for="0_answer_1_option_1">
+                    A.
+                    <p class="ue" style="display: inline;">A选项</p>
+                </label>
+            </li>
+
+        </ul>
+    </div>
+</li>
+
+<!--多选题结构-->
+<li id="qu_1_0">
+    <div class="test_content_nr_tt">
+        <i>题号</i><span>(分值)</span><font>题目1</font><b class="icon iconfont">&#xe881;</b>
+    </div>
+
+    <div class="test_content_nr_main">
+        <ul>
+            <li class="option">
+                <input type="checkbox" class="radioOrCheck" name="answer1"
+                       id="1_answer_1_option_1"
+                />
+                <label for="1_answer_1_option_1">
+                    A.
+                    <p class="ue" style="display: inline;">选项A</p>
+                </label>
+            </li>
+
+        </ul>
+    </div>
+</li>
+
+
+<!--单选题选项卡-->
+<li><a href="#qu_0_0">题号</a></li>
+
+<!--多选题选项卡-->
+<li><a href="#qu_1_0">1</a></li>
+
+
+
+// singleQuestionPage+='<li id="qu_0_'+i+'">';
+    // singleQuestionPage+='<div class="test_content_nr_tt">';
+        // singleQuestionPage+='<i>'+i+'</i><span>('+json.score+'分)</span><span>'+'找一个问题非常长的问题来试试这个东西到底管不管用，如果不管用，我还不知道该咋办呢，希望你能自动换个行如何，谢谢您了'+'</span><b class="icon iconfont">&#xe881;</b>';
+        // singleQuestionPage+='</div>';
+    //
+    // singleQuestionPage+='<div class="test_content_nr_main"><ul>';
+        // singleQuestionPage+='<a  onclick="addRole()" href="#">文件上传</a>';
+
+</body>
+</html>
